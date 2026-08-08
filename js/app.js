@@ -1,14 +1,62 @@
 /**
  * SFX Remote — Soundboard Application
- * Pure vanilla JS: sound playback, display animation, hamburger menu
+ * Pure vanilla JS: sound playback, display animation, menu, background customizer
  */
 
 (function () {
   "use strict";
 
   // ---------------------------------------------------------------------------
-  // Sound definitions — Mixkit royalty-free CDN (replace URLs as needed)
+  // Default background — change only this to set the site owner's default
+  // type: "gradient" | "color" | "image"
+  // For image defaults, set value to a URL string (e.g. "https://example.com/bg.jpg")
   // ---------------------------------------------------------------------------
+  const DEFAULT_BACKGROUND = {
+    type: "gradient",
+    value:
+      "linear-gradient(160deg, #0a0a0c 0%, #141418 45%, #1a1a22 100%)",
+  };
+
+  const STORAGE_KEY = "sounddrop-bg";
+  const MAX_STORAGE_BYTES = 2.5 * 1024 * 1024; // ~2.5 MB base64 limit for localStorage
+
+  // Preset options for the customizer panel
+  const PRESET_COLORS = [
+    { label: "Midnight", value: "#0a0a0c" },
+    { label: "Charcoal", value: "#141418" },
+    { label: "Slate", value: "#1a1a22" },
+    { label: "Navy", value: "#0d1117" },
+    { label: "Plum", value: "#1a1024" },
+  ];
+
+  const PRESET_GRADIENTS = [
+    {
+      label: "Default",
+      value: DEFAULT_BACKGROUND.value,
+      isDefault: true,
+    },
+    {
+      label: "Deep blue",
+      value: "linear-gradient(160deg, #0a0a14 0%, #121828 50%, #1a2040 100%)",
+    },
+    {
+      label: "Purple haze",
+      value: "linear-gradient(160deg, #0c0814 0%, #1a1028 50%, #281840 100%)",
+    },
+    {
+      label: "Warm dark",
+      value: "linear-gradient(160deg, #100c0a 0%, #1a1410 50%, #221a14 100%)",
+    },
+    {
+      label: "Forest",
+      value: "linear-gradient(160deg, #080c0a 0%, #0e1810 50%, #142018 100%)",
+    },
+    {
+      label: "Sunset",
+      value: "linear-gradient(160deg, #140810 0%, #201020 50%, #281828 100%)",
+    },
+  ];
+
   const SOUNDS = [
     {
       id: "laugh",
@@ -75,6 +123,19 @@
   // ---------------------------------------------------------------------------
   // DOM references
   // ---------------------------------------------------------------------------
+  const pageBg = document.getElementById("pageBg");
+  const bgToggleBtn = document.getElementById("bgToggleBtn");
+  const bgPanel = document.getElementById("bgPanel");
+  const bgPanelBackdrop = document.getElementById("bgPanelBackdrop");
+  const bgPanelClose = document.getElementById("bgPanelClose");
+  const bgPresetColors = document.getElementById("bgPresetColors");
+  const bgPresetGradients = document.getElementById("bgPresetGradients");
+  const bgColorPicker = document.getElementById("bgColorPicker");
+  const bgFileInput = document.getElementById("bgFileInput");
+  const bgChoosePhotoBtn = document.getElementById("bgChoosePhotoBtn");
+  const bgResetBtn = document.getElementById("bgResetBtn");
+  const toast = document.getElementById("toast");
+
   const keypadEl = document.getElementById("keypad");
   const displayScreen = document.getElementById("displayScreen");
   const displayEmoji = document.getElementById("displayEmoji");
@@ -86,19 +147,316 @@
   const stopBtn = document.getElementById("stopBtn");
 
   // ---------------------------------------------------------------------------
-  // Audio state — stop previous sound before playing next (no overlap)
+  // Toast helper
+  // ---------------------------------------------------------------------------
+  let toastTimer = null;
+
+  function showToast(message, duration) {
+    duration = duration || 3500;
+    toast.textContent = message;
+    toast.hidden = false;
+    toast.classList.add("is-visible");
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toast.classList.remove("is-visible");
+      setTimeout(function () {
+        toast.hidden = true;
+      }, 280);
+    }, duration);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Background system
+  // ---------------------------------------------------------------------------
+  let currentBgSelection = null;
+  let imageProbe = null;
+
+  function normalizeBackground(bg) {
+    if (!bg || !bg.type || !bg.value) return null;
+    if (bg.type !== "gradient" && bg.type !== "color" && bg.type !== "image") {
+      return null;
+    }
+    return { type: bg.type, value: bg.value };
+  }
+
+  function applyBackground(bg, skipSave) {
+    const normalized = normalizeBackground(bg) || DEFAULT_BACKGROUND;
+    currentBgSelection = normalized;
+
+    pageBg.classList.remove("is-photo");
+    pageBg.style.backgroundColor = "";
+    pageBg.style.backgroundImage = "";
+
+    if (normalized.type === "color") {
+      pageBg.style.backgroundColor = normalized.value;
+      pageBg.style.backgroundImage = "none";
+    } else if (normalized.type === "gradient") {
+      pageBg.style.backgroundColor = "var(--bg-deep)";
+      pageBg.style.backgroundImage = normalized.value;
+    } else if (normalized.type === "image") {
+      pageBg.classList.add("is-photo");
+      pageBg.style.backgroundColor = "#0a0a0c";
+      pageBg.style.backgroundImage = "url(\"" + normalized.value.replace(/"/g, "%22") + "\")";
+      validateImageBackground(normalized.value, !!skipSave);
+    }
+
+    updatePresetSelection(normalized);
+  }
+
+  /** Probe image URLs/data URLs; fall back if invalid */
+  function validateImageBackground(src, fromStorage) {
+    if (imageProbe) {
+      imageProbe.onload = null;
+      imageProbe.onerror = null;
+    }
+
+    imageProbe = new Image();
+    imageProbe.onload = function () {
+      imageProbe = null;
+    };
+    imageProbe.onerror = function () {
+      imageProbe = null;
+      if (fromStorage) {
+        clearSavedBackground();
+      }
+      showToast("Image failed to load — using default");
+      applyBackground(DEFAULT_BACKGROUND, true);
+    };
+    imageProbe.src = src;
+  }
+
+  function saveBackground(bg) {
+    try {
+      const payload = JSON.stringify(bg);
+      if (payload.length > MAX_STORAGE_BYTES) {
+        showToast("Photo is too large — please choose a smaller image");
+        return false;
+      }
+      localStorage.setItem(STORAGE_KEY, payload);
+      return true;
+    } catch (err) {
+      showToast("Photo is too large — please choose a smaller image");
+      return false;
+    }
+  }
+
+  function loadSavedBackground() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      return normalizeBackground(JSON.parse(raw));
+    } catch (err) {
+      clearSavedBackground();
+      return null;
+    }
+  }
+
+  function clearSavedBackground() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (err) {
+      /* ignore */
+    }
+  }
+
+  function resetBackground() {
+    clearSavedBackground();
+    applyBackground(DEFAULT_BACKGROUND, true);
+    showToast("Background reset to default");
+  }
+
+  function updatePresetSelection(bg) {
+    document.querySelectorAll(".bg-preset-swatch").forEach(function (swatch) {
+      const matchType = swatch.dataset.type;
+      const matchValue = swatch.dataset.value;
+      const isSelected =
+        bg.type === matchType &&
+        (bg.type === "image" ? false : bg.value === matchValue);
+      swatch.classList.toggle("is-selected", isSelected);
+    });
+  }
+
+  function buildPresetSwatches() {
+    PRESET_COLORS.forEach(function (preset) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "bg-preset-swatch";
+      btn.style.background = preset.value;
+      btn.dataset.type = "color";
+      btn.dataset.value = preset.value;
+      btn.setAttribute("aria-label", "Background color " + preset.label);
+      btn.title = preset.label;
+
+      btn.addEventListener("click", function () {
+        const bg = { type: "color", value: preset.value };
+        applyBackground(bg);
+        saveBackground(bg);
+        bgColorPicker.value = preset.value;
+      });
+
+      bgPresetColors.appendChild(btn);
+    });
+
+    PRESET_GRADIENTS.forEach(function (preset) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "bg-preset-swatch";
+      btn.style.background = preset.value;
+      btn.dataset.type = "gradient";
+      btn.dataset.value = preset.value;
+      btn.setAttribute("aria-label", "Background gradient " + preset.label);
+      btn.title = preset.label;
+
+      btn.addEventListener("click", function () {
+        const bg = { type: "gradient", value: preset.value };
+        applyBackground(bg);
+        saveBackground(bg);
+      });
+
+      bgPresetGradients.appendChild(btn);
+    });
+  }
+
+  function handleColorPickerChange() {
+    const bg = { type: "color", value: bgColorPicker.value };
+    applyBackground(bg);
+    saveBackground(bg);
+  }
+
+  function handleFileSelect(event) {
+    const file = event.target.files && event.target.files[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      showToast("Please choose an image file");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function () {
+      const dataUrl = reader.result;
+      if (typeof dataUrl !== "string") return;
+
+      // Check size before applying
+      if (dataUrl.length > MAX_STORAGE_BYTES) {
+        showToast("Photo is too large — please choose a smaller image");
+        return;
+      }
+
+      const bg = { type: "image", value: dataUrl };
+
+      // Validate image loads before saving
+      const img = new Image();
+      img.onload = function () {
+        applyBackground(bg);
+        if (!saveBackground(bg)) {
+          applyBackground(DEFAULT_BACKGROUND, true);
+        }
+        closeBgPanel();
+      };
+      img.onerror = function () {
+        showToast("Image failed to load — using default");
+        applyBackground(DEFAULT_BACKGROUND, true);
+      };
+      img.src = dataUrl;
+    };
+
+    reader.onerror = function () {
+      showToast("Could not read the selected photo");
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Background panel open/close
+  // ---------------------------------------------------------------------------
+  function openBgPanel() {
+    bgPanel.hidden = false;
+    bgPanelBackdrop.hidden = false;
+    requestAnimationFrame(function () {
+      bgPanel.classList.add("is-open");
+      bgPanelBackdrop.classList.add("is-open");
+    });
+    bgToggleBtn.classList.add("is-active");
+    bgToggleBtn.setAttribute("aria-expanded", "true");
+    bgPanelClose.focus();
+  }
+
+  function closeBgPanel() {
+    bgPanel.classList.remove("is-open");
+    bgPanelBackdrop.classList.remove("is-open");
+    bgToggleBtn.classList.remove("is-active");
+    bgToggleBtn.setAttribute("aria-expanded", "false");
+
+    bgPanel.addEventListener(
+      "transitionend",
+      function onEnd() {
+        bgPanel.hidden = true;
+        bgPanelBackdrop.hidden = true;
+        bgPanel.removeEventListener("transitionend", onEnd);
+      },
+      { once: true }
+    );
+
+    bgToggleBtn.focus();
+  }
+
+  function toggleBgPanel() {
+    if (bgPanel.classList.contains("is-open")) {
+      closeBgPanel();
+    } else {
+      openBgPanel();
+    }
+  }
+
+  bgToggleBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    toggleBgPanel();
+  });
+
+  bgPanelClose.addEventListener("click", closeBgPanel);
+
+  bgPanelBackdrop.addEventListener("click", closeBgPanel);
+
+  bgChoosePhotoBtn.addEventListener("click", function () {
+    bgFileInput.click();
+  });
+
+  bgFileInput.addEventListener("change", handleFileSelect);
+
+  bgColorPicker.addEventListener("input", handleColorPickerChange);
+
+  bgResetBtn.addEventListener("click", function () {
+    resetBackground();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && bgPanel.classList.contains("is-open")) {
+      closeBgPanel();
+    }
+  });
+
+  // Prevent panel clicks from closing via backdrop
+  bgPanel.addEventListener("click", function (e) {
+    e.stopPropagation();
+  });
+
+  // ---------------------------------------------------------------------------
+  // Audio state
   // ---------------------------------------------------------------------------
   let currentAudio = null;
   let isMuted = false;
   let animationTimer = null;
 
-  /** Returns master volume (0–1) respecting mute toggle */
   function getVolume() {
     if (isMuted) return 0;
     return Number(volumeSlider.value) / 100;
   }
 
-  /** Stop any currently playing sound */
   function stopCurrentSound() {
     if (currentAudio) {
       currentAudio.pause();
@@ -107,7 +465,6 @@
     }
   }
 
-  /** Play a sound by its config object */
   function playSound(sound) {
     stopCurrentSound();
 
@@ -126,17 +483,13 @@
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // Display animation (~700ms bounce + glow)
-  // ---------------------------------------------------------------------------
   function animateDisplay(emoji, label) {
     displayEmoji.textContent = emoji;
     displayEmoji.setAttribute("aria-label", label);
     displayLabel.textContent = label;
 
-    // Restart animation by removing and re-adding class
     displayScreen.classList.remove("is-animating");
-    void displayScreen.offsetWidth; // force reflow
+    void displayScreen.offsetWidth;
     displayScreen.classList.add("is-animating");
 
     clearTimeout(animationTimer);
@@ -145,9 +498,6 @@
     }, 700);
   }
 
-  // ---------------------------------------------------------------------------
-  // Button press feedback
-  // ---------------------------------------------------------------------------
   function flashButton(btn) {
     btn.classList.add("is-pressed");
     setTimeout(function () {
@@ -155,16 +505,12 @@
     }, 150);
   }
 
-  /** Handle sound button click */
   function onSoundClick(sound, btn) {
     flashButton(btn);
     animateDisplay(sound.emoji, sound.label);
     playSound(sound);
   }
 
-  // ---------------------------------------------------------------------------
-  // Build keypad buttons from SOUNDS array
-  // ---------------------------------------------------------------------------
   function buildKeypad() {
     SOUNDS.forEach(function (sound) {
       const btn = document.createElement("button");
@@ -190,11 +536,10 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Hamburger menu — open/close with outside-click dismiss
+  // Hamburger menu
   // ---------------------------------------------------------------------------
   function openMenu() {
     dropdownMenu.hidden = false;
-    // Allow one frame for display:block before adding open class
     requestAnimationFrame(function () {
       dropdownMenu.classList.add("is-open");
     });
@@ -232,7 +577,6 @@
     toggleMenu();
   });
 
-  // Close menu when clicking outside
   document.addEventListener("click", function (e) {
     if (
       dropdownMenu.classList.contains("is-open") &&
@@ -243,14 +587,12 @@
     }
   });
 
-  // Close menu when a link is selected
   dropdownMenu.querySelectorAll("a").forEach(function (link) {
     link.addEventListener("click", function () {
       closeMenu();
     });
   });
 
-  // Close on Escape key
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && dropdownMenu.classList.contains("is-open")) {
       closeMenu();
@@ -258,7 +600,7 @@
   });
 
   // ---------------------------------------------------------------------------
-  // Utility controls — volume & stop-all
+  // Utility controls
   // ---------------------------------------------------------------------------
   volumeBtn.addEventListener("click", function () {
     isMuted = !isMuted;
@@ -274,7 +616,6 @@
     if (currentAudio) {
       currentAudio.volume = getVolume();
     }
-    // Un-mute when user adjusts slider
     if (isMuted && volumeSlider.value > 0) {
       isMuted = false;
       volumeBtn.classList.remove("is-muted");
@@ -293,5 +634,14 @@
   // ---------------------------------------------------------------------------
   // Init
   // ---------------------------------------------------------------------------
+  buildPresetSwatches();
   buildKeypad();
+
+  const savedBg = loadSavedBackground();
+  if (savedBg) {
+    applyBackground(savedBg, true);
+  } else {
+    applyBackground(DEFAULT_BACKGROUND, true);
+  }
 })();
+
