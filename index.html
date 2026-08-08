@@ -10,12 +10,79 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Ambient background behind the device -->
-  <div class="page-bg" aria-hidden="true"></div>
+  <!-- Full-viewport background layer -->
+  <div class="page-bg" id="pageBg" aria-hidden="true"></div>
+
+  <!-- Floating background customizer trigger (viewport-fixed, outside device) -->
+  <button
+    class="bg-toggle-btn"
+    id="bgToggleBtn"
+    type="button"
+    aria-label="Customize background"
+    aria-expanded="false"
+    aria-controls="bgPanel"
+  >
+    <svg class="bg-toggle-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2ZM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5Z"/>
+    </svg>
+  </button>
+
+  <!-- Background customizer panel -->
+  <div class="bg-panel-backdrop" id="bgPanelBackdrop" hidden></div>
+  <aside
+    class="bg-panel"
+    id="bgPanel"
+    role="dialog"
+    aria-labelledby="bgPanelTitle"
+    aria-modal="true"
+    hidden
+  >
+    <header class="bg-panel-header">
+      <h2 class="bg-panel-title" id="bgPanelTitle">Background</h2>
+      <button class="bg-panel-close" id="bgPanelClose" type="button" aria-label="Close background panel">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </header>
+
+    <div class="bg-panel-body">
+      <section class="bg-section">
+        <h3 class="bg-section-label">Presets</h3>
+        <div class="bg-preset-grid" id="bgPresetColors" role="group" aria-label="Preset solid colors"></div>
+      </section>
+
+      <section class="bg-section">
+        <h3 class="bg-section-label">Gradients</h3>
+        <div class="bg-preset-grid bg-preset-grid--gradients" id="bgPresetGradients" role="group" aria-label="Preset gradients"></div>
+      </section>
+
+      <section class="bg-section">
+        <h3 class="bg-section-label">Custom color</h3>
+        <label class="bg-color-picker-wrap">
+          <input type="color" class="bg-color-picker" id="bgColorPicker" value="#0a0a0c" aria-label="Pick a custom background color">
+          <span class="bg-color-picker-label">Pick a color</span>
+        </label>
+      </section>
+
+      <section class="bg-section bg-section--photo">
+        <h3 class="bg-section-label">Your photo</h3>
+        <input type="file" class="bg-file-input" id="bgFileInput" accept="image/*" hidden>
+        <button class="bg-action-btn bg-action-btn--primary" id="bgChoosePhotoBtn" type="button">
+          Choose photo from device
+        </button>
+        <p class="bg-hint">Saved locally in your browser only. Max ~2 MB recommended.</p>
+      </section>
+
+      <button class="bg-action-btn bg-action-btn--reset" id="bgResetBtn" type="button">
+        Reset to default
+      </button>
+    </div>
+  </aside>
+
+  <!-- Non-blocking toast for errors / info -->
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
 
   <main class="page">
     <article class="device" aria-label="Soundboard remote control">
-      <!-- Header: branding + hamburger menu -->
       <header class="device-header">
         <div class="device-brand">
           <span class="brand-dot"></span>
@@ -47,7 +114,6 @@
         </div>
       </header>
 
-      <!-- LCD-style emoji display -->
       <section class="display-panel" aria-live="polite" aria-atomic="true">
         <div class="display-bezel">
           <div class="display-screen" id="displayScreen">
@@ -57,10 +123,8 @@
         </div>
       </section>
 
-      <!-- Sound button keypad -->
       <section class="keypad" id="keypad" aria-label="Sound effects"></section>
 
-      <!-- Utility controls -->
       <footer class="utility-bar">
         <button class="utility-btn" id="volumeBtn" type="button" aria-label="Toggle volume" aria-pressed="true">
           <span class="utility-icon" aria-hidden="true">🔊</span>
@@ -88,3 +152,4 @@
   <script src="js/app.js"></script>
 </body>
 </html>
+
