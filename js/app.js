@@ -100,7 +100,7 @@
       id: "cash",
       emoji: "💰",
       label: "Cash",
-      src: "https://assets.mixkit.co/active_storage/sfx/888/888-preview.mp3",
+      src: "cash.mp3",
     },
     {
       id: "error",
