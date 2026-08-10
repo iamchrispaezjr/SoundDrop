@@ -120,7 +120,26 @@
       label: "Cheer",
       src: "https://assets.mixkit.co/active_storage/sfx/2236/2236-preview.mp3",
     },
+    {
+      id: "cheer",
+      emoji: "🎉",
+      label: "Cheer",
+      src: "https://assets.mixkit.co/active_storage/sfx/2236/2236-preview.mp3",
+    },
+    {
+      id: "emergency",
+      emoji: "🚨",
+      label: "Emergency Meeting",
+      src: "Emergency Meeting.mp3",
+    },
+    {
+      id: "sus",
+      emoji: "👁️",
+      label: "Sus",
+      src: "Sus.mp3",
+    },
   ];
+  
 
   // ---------------------------------------------------------------------------
   // DOM references
