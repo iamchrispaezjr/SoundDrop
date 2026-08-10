@@ -64,7 +64,7 @@
       id: "laugh",
       emoji: "😂",
       label: "Laugh",
-      src: "https://assets.mixkit.co/active_storage/sfx/2895/2895-preview.mp3",
+      src: "LMAO.mp3",
     },
     {
       id: "applause",
