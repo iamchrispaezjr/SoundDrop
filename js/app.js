@@ -94,7 +94,7 @@
       id: "scratch",
       emoji: "📀",
       label: "Scratch",
-      src: "https://assets.mixkit.co/active_storage/sfx/212/212-preview.mp3",
+      src: "Record Scratch.mp3",
     },
     {
       id: "cash",
