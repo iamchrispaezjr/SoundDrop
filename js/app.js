@@ -70,7 +70,7 @@
       id: "applause",
       emoji: "👏",
       label: "Applause",
-      src: "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3",
+      src: "Nickelodean Clapping.mp3",
     },
     {
       id: "boo",
