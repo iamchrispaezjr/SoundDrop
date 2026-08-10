@@ -116,9 +116,9 @@
     },
     {
       id: "cheer",
-      emoji: "🎉",
-      label: "Cheer",
-      src: "https://assets.mixkit.co/active_storage/sfx/2236/2236-preview.mp3",
+      emoji: "🗑️",
+      label: "Moron",
+      src: "Vader - Clumsy & Stupid.mp3",
     },
     {
       id: "emergency",
