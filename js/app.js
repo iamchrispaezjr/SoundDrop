@@ -76,7 +76,7 @@
       id: "boo",
       emoji: "👎",
       label: "Boo",
-      src: "https://assets.mixkit.co/active_storage/sfx/946/946-preview.mp3",
+      src: "Patrick - Boo.mp3",
     },
     {
       id: "airhorn",
