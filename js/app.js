@@ -81,8 +81,8 @@
     {
       id: "airhorn",
       emoji: "📯",
-      label: "Air Horn",
-      src: "Airhorn.mp3",
+      label: "Rimshot",
+      src: "Rimshot.mp3",
     },
     {
       id: "drumroll",
