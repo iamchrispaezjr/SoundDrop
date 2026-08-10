@@ -105,14 +105,14 @@
     {
       id: "error",
       emoji: "🚫",
-      label: "Wrong",
-      src: "https://assets.mixkit.co/active_storage/sfx/948/948-preview.mp3",
+      label: "FML",
+      src: "FML.mp3",
     },
     {
       id: "success",
       emoji: "✅",
-      label: "Correct",
-      src: "https://assets.mixkit.co/active_storage/sfx/942/942-preview.mp3",
+      label: "Typical",
+      src: "Typical.mp3",
     },
     {
       id: "cheer",
