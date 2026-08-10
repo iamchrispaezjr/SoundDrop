@@ -81,14 +81,14 @@
     {
       id: "airhorn",
       emoji: "📯",
-      label: "Rimshot",
-      src: "Rimshot.mp3",
+      label: "Airhorn",
+      src: "Airhorn.mp3",
     },
     {
       id: "drumroll",
       emoji: "🥁",
-      label: "Drum Roll",
-      src: "https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3",
+      label: "Rimshot",
+      src: "Rimshot.mp3",
     },
     {
       id: "scratch",
