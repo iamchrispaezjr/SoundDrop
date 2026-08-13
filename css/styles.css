@@ -627,19 +627,6 @@ body {
     0 0 0 1px rgba(137, 207, 240, 0.45);
 }
 
-.pack-tab-mark {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.18);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset;
-}
-
-.pack-tab-icon {
-  font-size: 0.95rem;
-  line-height: 1;
-}
-
 .pack-tab-text {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
@@ -1409,11 +1396,6 @@ body {
     writing-mode: horizontal-tb;
     transform: none;
     letter-spacing: 0.12em;
-  }
-
-  .pack-tab-mark {
-    width: 7px;
-    height: 7px;
   }
 
   .pack-tray {
