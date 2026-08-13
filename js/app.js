@@ -20,7 +20,20 @@
   };
 
   const STORAGE_KEY = "sounddrop-bg";
+  const DEVICE_STORAGE_KEY = "sounddrop-device";
   const MAX_STORAGE_BYTES = 2.5 * 1024 * 1024; // ~2.5 MB base64 limit for localStorage
+  const DEFAULT_DEVICE_COLOR = "#1c1c22";
+
+  const DEVICE_PRESETS = [
+    { label: "Graphite", value: "#1c1c22" },
+    { label: "Baby blue", value: "#89CFF0" },
+    { label: "Navy", value: "#1a2744" },
+    { label: "Plum", value: "#2a1840" },
+    { label: "Forest", value: "#16301c" },
+    { label: "Crimson", value: "#4a1c22" },
+    { label: "Sand", value: "#c4b49a" },
+    { label: "Ivory", value: "#e8e8ec" },
+  ];
   const INTRO_STORAGE_KEY = "sounddrop-intro-at";
   const INTRO_COOLDOWN_MS = 3 * 60 * 60 * 1000;
   const INTRO_SRC = "Hello There!.mp3";
@@ -68,6 +81,7 @@
       emoji: "😂",
       label: "Laugh",
       src: "LMAO.mp3",
+      icon: "Ariana Grande Laughing.png",
     },
     {
       id: "applause",
@@ -80,10 +94,11 @@
       emoji: "👎",
       label: "Boo",
       src: "Patrick - Boo.mp3",
+      icon: "Patrick Booing.png",
     },
     {
       id: "airhorn",
-      emoji: "📯",
+      emoji: "📣",
       label: "Airhorn",
       src: "Airhorn.mp3",
     },
@@ -109,13 +124,15 @@
       id: "error",
       emoji: "🚫",
       label: "FML",
+      icon: "Sponge.png",
       src: "Fuck My Life.mp3",
     },
     {
       id: "success",
       emoji: "✅",
       label: "Typical",
-      src: "Typical.mp3",
+      src: "Typical Merged.mp3",
+      icon: "Squidward Typical.png",
     },
     {
       id: "cheer",
@@ -140,6 +157,7 @@
       emoji: "⭐",
       label: "Scream",
       src: "P Scream.mp3",
+      icon: "Patrick Trombone.png",
     },
     {
       id: "poo",
@@ -184,6 +202,13 @@
   const bgFileInput = document.getElementById("bgFileInput");
   const bgChoosePhotoBtn = document.getElementById("bgChoosePhotoBtn");
   const bgResetBtn = document.getElementById("bgResetBtn");
+  const themeToggleBtn = document.getElementById("themeToggleBtn");
+  const themePanel = document.getElementById("themePanel");
+  const themePanelClose = document.getElementById("themePanelClose");
+  const themePresetColors = document.getElementById("themePresetColors");
+  const themeColorPicker = document.getElementById("themeColorPicker");
+  const themeResetBtn = document.getElementById("themeResetBtn");
+  const sfxDevice = document.getElementById("sfxDevice");
   const toast = document.getElementById("toast");
 
   const keypadEl = document.getElementById("keypad");
@@ -431,6 +456,7 @@
   // Background panel open/close
   // ---------------------------------------------------------------------------
   function openBgPanel() {
+    closeThemePanel();
     bgPanel.hidden = false;
     bgPanelBackdrop.hidden = false;
     requestAnimationFrame(function () {
@@ -444,7 +470,9 @@
 
   function closeBgPanel() {
     bgPanel.classList.remove("is-open");
-    bgPanelBackdrop.classList.remove("is-open");
+    if (!themePanel.classList.contains("is-open")) {
+      bgPanelBackdrop.classList.remove("is-open");
+    }
     bgToggleBtn.classList.remove("is-active");
     bgToggleBtn.setAttribute("aria-expanded", "false");
 
@@ -452,7 +480,9 @@
       "transitionend",
       function onEnd() {
         bgPanel.hidden = true;
-        bgPanelBackdrop.hidden = true;
+        if (!themePanel.classList.contains("is-open")) {
+          bgPanelBackdrop.hidden = true;
+        }
         bgPanel.removeEventListener("transitionend", onEnd);
       },
       { once: true }
@@ -476,7 +506,10 @@
 
   bgPanelClose.addEventListener("click", closeBgPanel);
 
-  bgPanelBackdrop.addEventListener("click", closeBgPanel);
+  bgPanelBackdrop.addEventListener("click", function () {
+    closeBgPanel();
+    closeThemePanel();
+  });
 
   bgChoosePhotoBtn.addEventListener("click", function () {
     bgFileInput.click();
@@ -491,15 +524,199 @@
   });
 
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && bgPanel.classList.contains("is-open")) {
-      closeBgPanel();
-    }
+    if (e.key !== "Escape") return;
+    if (bgPanel.classList.contains("is-open")) closeBgPanel();
+    if (themePanel.classList.contains("is-open")) closeThemePanel();
   });
 
   // Prevent panel clicks from closing via backdrop
   bgPanel.addEventListener("click", function (e) {
     e.stopPropagation();
   });
+
+  // ---------------------------------------------------------------------------
+  // Soundboard (device) color — separate from background
+  // ---------------------------------------------------------------------------
+  function clampByte(n) {
+    return Math.max(0, Math.min(255, Math.round(n)));
+  }
+
+  function hexToRgb(hex) {
+    const raw = String(hex || "").replace("#", "");
+    const full = raw.length === 3 ? raw.split("").map(function (c) { return c + c; }).join("") : raw;
+    if (!/^[0-9a-fA-F]{6}$/.test(full)) return null;
+    const n = parseInt(full, 16);
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+
+  function rgbToHex(r, g, b) {
+    return (
+      "#" +
+      [r, g, b]
+        .map(function (v) {
+          const h = clampByte(v).toString(16);
+          return h.length === 1 ? "0" + h : h;
+        })
+        .join("")
+    );
+  }
+
+  function mixHex(hex, other, amount) {
+    const a = hexToRgb(hex);
+    const b = hexToRgb(other);
+    if (!a || !b) return hex;
+    return rgbToHex(
+      a.r + (b.r - a.r) * amount,
+      a.g + (b.g - a.g) * amount,
+      a.b + (b.b - a.b) * amount
+    );
+  }
+
+  function isLightHex(hex) {
+    const rgb = hexToRgb(hex);
+    if (!rgb) return false;
+    return (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000 > 150;
+  }
+
+  function normalizeDeviceColor(value) {
+    const rgb = hexToRgb(value);
+    if (!rgb) return null;
+    return rgbToHex(rgb.r, rgb.g, rgb.b);
+  }
+
+  function applyDeviceColor(hex, skipSave) {
+    const color = normalizeDeviceColor(hex) || DEFAULT_DEVICE_COLOR;
+    const light = isLightHex(color);
+    const vars = {
+      "--device-body": color,
+      "--device-body-light": mixHex(color, "#ffffff", light ? 0.18 : 0.14),
+      "--device-body-dark": mixHex(color, "#000000", light ? 0.12 : 0.22),
+      "--device-border": light ? mixHex(color, "#000000", 0.28) : mixHex(color, "#ffffff", 0.16),
+      "--btn-face": light ? mixHex(color, "#000000", 0.08) : mixHex(color, "#ffffff", 0.12),
+      "--btn-face-hover": light ? mixHex(color, "#ffffff", 0.12) : mixHex(color, "#ffffff", 0.2),
+      "--btn-face-active": light ? mixHex(color, "#000000", 0.16) : mixHex(color, "#000000", 0.12),
+      "--btn-text": light ? "#141418" : "#e8e8ec",
+      "--btn-label": light ? "#3d3d48" : "#9898a8",
+    };
+
+    Object.keys(vars).forEach(function (name) {
+      sfxDevice.style.setProperty(name, vars[name]);
+    });
+
+    themeColorPicker.value = color;
+    document.querySelectorAll(".theme-preset-swatch").forEach(function (swatch) {
+      swatch.classList.toggle("is-selected", swatch.dataset.value === color);
+    });
+
+    if (!skipSave) {
+      try {
+        localStorage.setItem(DEVICE_STORAGE_KEY, color);
+      } catch (err) {
+        /* ignore */
+      }
+    }
+  }
+
+  function resetDeviceColor() {
+    try {
+      localStorage.removeItem(DEVICE_STORAGE_KEY);
+    } catch (err) {
+      /* ignore */
+    }
+    [
+      "--device-body",
+      "--device-body-light",
+      "--device-body-dark",
+      "--device-border",
+      "--btn-face",
+      "--btn-face-hover",
+      "--btn-face-active",
+      "--btn-text",
+      "--btn-label",
+    ].forEach(function (name) {
+      sfxDevice.style.removeProperty(name);
+    });
+    themeColorPicker.value = DEFAULT_DEVICE_COLOR;
+    document.querySelectorAll(".theme-preset-swatch").forEach(function (swatch) {
+      swatch.classList.toggle("is-selected", swatch.dataset.value === DEFAULT_DEVICE_COLOR);
+    });
+    showToast("Soundboard color reset to default");
+  }
+
+  function buildDevicePresets() {
+    DEVICE_PRESETS.forEach(function (preset) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "bg-preset-swatch theme-preset-swatch";
+      btn.style.background = preset.value;
+      btn.dataset.value = preset.value;
+      btn.setAttribute("aria-label", "Soundboard color " + preset.label);
+      btn.title = preset.label;
+      btn.addEventListener("click", function () {
+        applyDeviceColor(preset.value);
+      });
+      themePresetColors.appendChild(btn);
+    });
+  }
+
+  function openThemePanel() {
+    closeBgPanel();
+    themePanel.hidden = false;
+    bgPanelBackdrop.hidden = false;
+    requestAnimationFrame(function () {
+      themePanel.classList.add("is-open");
+      bgPanelBackdrop.classList.add("is-open");
+    });
+    themeToggleBtn.classList.add("is-active");
+    themeToggleBtn.setAttribute("aria-expanded", "true");
+    themePanelClose.focus();
+  }
+
+  function closeThemePanel() {
+    if (!themePanel.classList.contains("is-open") && themePanel.hidden) return;
+    themePanel.classList.remove("is-open");
+    themeToggleBtn.classList.remove("is-active");
+    themeToggleBtn.setAttribute("aria-expanded", "false");
+
+    if (!bgPanel.classList.contains("is-open")) {
+      bgPanelBackdrop.classList.remove("is-open");
+    }
+
+    themePanel.addEventListener(
+      "transitionend",
+      function onEnd() {
+        themePanel.hidden = true;
+        if (!bgPanel.classList.contains("is-open")) {
+          bgPanelBackdrop.hidden = true;
+        }
+        themePanel.removeEventListener("transitionend", onEnd);
+      },
+      { once: true }
+    );
+
+    themeToggleBtn.focus();
+  }
+
+  themeToggleBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (themePanel.classList.contains("is-open")) {
+      closeThemePanel();
+    } else {
+      openThemePanel();
+    }
+  });
+
+  themePanelClose.addEventListener("click", closeThemePanel);
+
+  themePanel.addEventListener("click", function (e) {
+    e.stopPropagation();
+  });
+
+  themeColorPicker.addEventListener("input", function () {
+    applyDeviceColor(themeColorPicker.value);
+  });
+
+  themeResetBtn.addEventListener("click", resetDeviceColor);
 
   // ---------------------------------------------------------------------------
   // Audio state
@@ -1115,9 +1332,19 @@
   // Init
   // ---------------------------------------------------------------------------
   buildPresetSwatches();
+  buildDevicePresets();
   buildKeypad();
   buildShareMenu();
   initIntroSound();
+
+  try {
+    const savedDevice = localStorage.getItem(DEVICE_STORAGE_KEY);
+    if (savedDevice) {
+      applyDeviceColor(savedDevice, true);
+    }
+  } catch (err) {
+    /* ignore */
+  }
 
   const savedBg = loadSavedBackground();
   if (savedBg) {
@@ -1125,4 +1352,26 @@
   } else {
     applyBackground(DEFAULT_BACKGROUND, true);
   }
+
+  const copyrightPop = document.getElementById("copyrightPop");
+  const copyrightPopClose = document.getElementById("copyrightPopClose");
+
+  function hideCopyrightPop() {
+    copyrightPop.classList.remove("is-open");
+    copyrightPop.addEventListener(
+      "transitionend",
+      function onEnd() {
+        copyrightPop.hidden = true;
+        copyrightPop.removeEventListener("transitionend", onEnd);
+      },
+      { once: true }
+    );
+  }
+
+  copyrightPopClose.addEventListener("click", hideCopyrightPop);
+
+  copyrightPop.hidden = false;
+  setTimeout(function () {
+    copyrightPop.classList.add("is-open");
+  }, 500);
 })();

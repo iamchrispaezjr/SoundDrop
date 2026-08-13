@@ -14,19 +14,33 @@
   <!-- Full-viewport background layer -->
   <div class="page-bg" id="pageBg" aria-hidden="true"></div>
 
-  <!-- Floating background customizer trigger (viewport-fixed, outside device) -->
-  <button
-    class="bg-toggle-btn"
-    id="bgToggleBtn"
-    type="button"
-    aria-label="Customize background"
-    aria-expanded="false"
-    aria-controls="bgPanel"
-  >
-    <svg class="bg-toggle-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2ZM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5Z"/>
-    </svg>
-  </button>
+  <!-- Floating customizers (viewport-fixed, outside device) -->
+  <div class="float-tools">
+    <button
+      class="bg-toggle-btn"
+      id="themeToggleBtn"
+      type="button"
+      aria-label="Customize soundboard color"
+      aria-expanded="false"
+      aria-controls="themePanel"
+    >
+      <svg class="bg-toggle-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path fill-rule="evenodd" d="M8 2.5h8A2.5 2.5 0 0 1 18.5 5v14A2.5 2.5 0 0 1 16 21.5H8A2.5 2.5 0 0 1 5.5 19V5A2.5 2.5 0 0 1 8 2.5Zm4 2.35a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5ZM9.15 9.9h2.15v2.15H9.15Zm3.55 0h2.15v2.15h-2.15ZM9.15 13.55h2.15V15.7H9.15Zm3.55 0h2.15V15.7h-2.15ZM9.15 17.2h5.7v1.35h-5.7Z"/>
+      </svg>
+    </button>
+    <button
+      class="bg-toggle-btn"
+      id="bgToggleBtn"
+      type="button"
+      aria-label="Customize background"
+      aria-expanded="false"
+      aria-controls="bgPanel"
+    >
+      <svg class="bg-toggle-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2ZM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5Z"/>
+      </svg>
+    </button>
+  </div>
 
   <!-- Background customizer panel -->
   <div class="bg-panel-backdrop" id="bgPanelBackdrop" hidden></div>
@@ -79,8 +93,55 @@
     </div>
   </aside>
 
+  <!-- Soundboard color customizer (separate from background) -->
+  <aside
+    class="bg-panel"
+    id="themePanel"
+    role="dialog"
+    aria-labelledby="themePanelTitle"
+    aria-modal="true"
+    hidden
+  >
+    <header class="bg-panel-header">
+      <h2 class="bg-panel-title" id="themePanelTitle">Soundboard</h2>
+      <button class="bg-panel-close" id="themePanelClose" type="button" aria-label="Close soundboard color panel">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </header>
+
+    <div class="bg-panel-body">
+      <section class="bg-section">
+        <h3 class="bg-section-label">Remote color</h3>
+        <div class="bg-preset-grid" id="themePresetColors" role="group" aria-label="Soundboard color presets"></div>
+      </section>
+
+      <section class="bg-section">
+        <h3 class="bg-section-label">Custom color</h3>
+        <label class="bg-color-picker-wrap">
+          <input type="color" class="bg-color-picker" id="themeColorPicker" value="#1c1c22" aria-label="Pick a custom soundboard color">
+          <span class="bg-color-picker-label">Pick a color</span>
+        </label>
+      </section>
+
+      <p class="bg-hint">Changes the remote only. Background stays on the picture button.</p>
+
+      <button class="bg-action-btn bg-action-btn--reset" id="themeResetBtn" type="button">
+        Reset remote color
+      </button>
+    </div>
+  </aside>
+
   <!-- Non-blocking toast for errors / info -->
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+
+  <aside class="copyright-pop" id="copyrightPop" role="note" aria-label="Copyright notice" hidden>
+    <button class="copyright-pop-close" id="copyrightPopClose" type="button" aria-label="Close copyright notice">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <p class="copyright-pop-kicker">Copyright notice</p>
+    <p>This website features copyrighted sound effects. It is not meant to violate copyright laws. SoundDrop is a fun, <strong>free</strong> project and is <strong>not being monetized</strong>.</p>
+    <p>For a takedown request, contact <a href="mailto:contactme@iamchrispaezjr.com">contactme@iamchrispaezjr.com</a>.</p>
+  </aside>
 
   <main class="page">
     <div class="device-stage">
@@ -126,7 +187,7 @@
         </div>
       </aside>
 
-      <article class="device" aria-label="Soundboard remote control">
+      <article class="device" id="sfxDevice" aria-label="Soundboard remote control">
       <header class="device-header">
         <div class="share-wrapper">
           <button
