@@ -132,6 +132,30 @@
       label: "Sus",
       src: "Sus.mp3",
     },
+    {
+      id: "scream",
+      emoji: "⭐",
+      label: "Scream",
+      src: "P Scream.mp3",
+    },
+    {
+      id: "poo",
+      emoji: "💩",
+      label: "Poo",
+      src: "Big Ol' Dump.mp3",
+    },
+    {
+      id: "iturnnow",
+      emoji: "🛞",
+      label: "I Turn Now",
+      src: "I Turn Now.mp3",
+    },
+    {
+      id: "fuck",
+      emoji: "🤬",
+      label: "Fuck",
+      src: "FAHH SFX.mp3",
+    },
   ];
   
 
