@@ -165,6 +165,7 @@
       emoji: "💩",
       label: "Poo",
       src: "Big Ol' Dump.mp3",
+      icon: "Patrick Poo.png",
     },
     {
       id: "iturnnow",
