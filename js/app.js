@@ -139,6 +139,7 @@
       emoji: "🗑️",
       label: "Moron",
       src: "Vader - Clumsy & Stupid.mp3",
+      icon: "Vader.png",
     },
     {
       id: "emergency",
