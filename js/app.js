@@ -137,7 +137,7 @@
     {
       id: "cheer",
       emoji: "🗑️",
-      label: "Moron",
+      label: "Stupid",
       src: "Vader - Clumsy & Stupid.mp3",
       icon: "Vader.png",
     },
