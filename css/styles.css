@@ -464,6 +464,204 @@ body {
   padding: 24px 16px;
 }
 
+/* --- Device + bookmark stage --- */
+.device-stage {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Bookmark tab + slide-out pack tray (placeholder) */
+.pack-bookmark {
+  position: absolute;
+  top: 86px;
+  right: 100%;
+  z-index: 4;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: stretch;
+  pointer-events: none;
+}
+
+.pack-tab,
+.pack-tray {
+  pointer-events: auto;
+}
+
+.pack-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 34px;
+  min-height: 118px;
+  margin-right: -1px;
+  padding: 14px 4px 12px;
+  border: 1px solid #5aadcc;
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  background: linear-gradient(180deg, #a8dbf5 0%, #89CFF0 55%, #6bb8e0 100%);
+  color: #000000;
+  cursor: pointer;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 8px 16px rgba(0, 0, 0, 0.35);
+  transition:
+    transform var(--transition-fast),
+    filter var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.pack-tab:hover {
+  filter: brightness(1.08);
+}
+
+.pack-tab:active {
+  transform: translateX(2px);
+}
+
+.pack-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.pack-bookmark.is-open .pack-tab {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 0 0 1px rgba(137, 207, 240, 0.45);
+}
+
+.pack-tab-mark {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.18);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset;
+}
+
+.pack-tab-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.pack-tab-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.pack-tray {
+  width: 168px;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  margin-right: 0;
+  padding: 12px 0 12px 0;
+  border: 1px solid var(--device-border);
+  border-right: none;
+  border-radius: 12px 0 0 12px;
+  background: linear-gradient(180deg, #24242c 0%, #18181e 100%);
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.04) inset,
+    0 10px 24px rgba(0, 0, 0, 0.4);
+  transform: translateX(8px);
+  transition:
+    max-width var(--transition-panel),
+    opacity var(--transition-panel),
+    padding var(--transition-panel),
+    transform var(--transition-panel);
+}
+
+.pack-bookmark.is-open .pack-tray {
+  max-width: 168px;
+  opacity: 1;
+  padding: 12px 12px 12px 12px;
+  transform: translateX(0);
+}
+
+.pack-tray[hidden] {
+  display: block;
+  visibility: hidden;
+}
+
+.pack-bookmark.is-open .pack-tray[hidden] {
+  visibility: visible;
+}
+
+.pack-tray-kicker {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--btn-text);
+  margin-bottom: 4px;
+}
+
+.pack-tray-note {
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: var(--btn-label);
+  margin-bottom: 10px;
+}
+
+.pack-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pack-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--btn-text);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.pack-chip:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.pack-chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.pack-chip.is-active {
+  border-color: rgba(91, 140, 255, 0.4);
+  background: rgba(91, 140, 255, 0.12);
+}
+
+.pack-chip.is-soon {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.pack-chip-emoji {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.pack-chip-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
 /* --- Device body --- */
 .device {
   position: relative;
@@ -887,6 +1085,18 @@ body {
   }
 }
 
+.sound-btn--center {
+  grid-column: 2;
+}
+
+@media (min-width: 380px) {
+  .sound-btn--center {
+    grid-column: 2 / span 2;
+    justify-self: center;
+    width: calc(50% - 4.5px);
+  }
+}
+
 .sound-btn {
   display: flex;
   flex-direction: column;
@@ -935,6 +1145,24 @@ body {
   font-size: 1.6rem;
   line-height: 1;
   user-select: none;
+}
+
+.sound-btn-emoji-img,
+.display-emoji-img {
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.sound-btn-emoji-img {
+  width: 28px;
+  height: 28px;
+}
+
+.display-emoji-img {
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 0 12px var(--lcd-glow));
 }
 
 .sound-btn-label {
@@ -1053,6 +1281,33 @@ body {
   cursor: pointer;
 }
 
+@media (max-width: 900px) {
+  .pack-bookmark {
+    top: 78px;
+    right: auto;
+    left: 0;
+  }
+
+  .pack-tab {
+    width: 30px;
+    min-height: 104px;
+    margin-right: 0;
+    border-radius: 0 10px 10px 0;
+    border-right: 1px solid #5aadcc;
+    border-left: none;
+  }
+
+  .pack-tray {
+    position: absolute;
+    left: 30px;
+    top: 0;
+    border-right: 1px solid var(--device-border);
+    border-left: none;
+    border-radius: 0 12px 12px 0;
+    z-index: 5;
+  }
+}
+
 @media (max-width: 480px) {
   .page {
     padding: 56px 10px 12px;
@@ -1071,6 +1326,13 @@ body {
     right: 12px;
     left: 12px;
     width: auto;
+  }
+
+  .device-stage {
+    max-width: none;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   .device {

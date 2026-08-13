@@ -83,7 +83,50 @@
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
 
   <main class="page">
-    <article class="device" aria-label="Soundboard remote control">
+    <div class="device-stage">
+      <aside class="pack-bookmark" id="packBookmark">
+        <button
+          class="pack-tab"
+          id="packTab"
+          type="button"
+          aria-label="Open sound packs"
+          aria-expanded="false"
+          aria-controls="packTray"
+        >
+          <span class="pack-tab-mark" aria-hidden="true"></span>
+          <span class="pack-tab-icon" aria-hidden="true">📑</span>
+          <span class="pack-tab-text">Packs</span>
+        </button>
+
+        <div class="pack-tray" id="packTray" hidden>
+          <p class="pack-tray-kicker">Sound packs</p>
+          <p class="pack-tray-note">Placeholder — tap a pack to preview the idea</p>
+          <div class="pack-list" role="list">
+            <button class="pack-chip is-active" type="button" data-pack="all" data-emoji="🎛️">
+              <span class="pack-chip-emoji" aria-hidden="true">🎛️</span>
+              <span class="pack-chip-label">All</span>
+            </button>
+            <button class="pack-chip" type="button" data-pack="laughs" data-emoji="😂">
+              <span class="pack-chip-emoji" aria-hidden="true">😂</span>
+              <span class="pack-chip-label">Laughs</span>
+            </button>
+            <button class="pack-chip" type="button" data-pack="reactions" data-emoji="👏">
+              <span class="pack-chip-emoji" aria-hidden="true">👏</span>
+              <span class="pack-chip-label">Reactions</span>
+            </button>
+            <button class="pack-chip" type="button" data-pack="bits" data-emoji="🎬">
+              <span class="pack-chip-emoji" aria-hidden="true">🎬</span>
+              <span class="pack-chip-label">Bits</span>
+            </button>
+            <button class="pack-chip is-soon" type="button" disabled>
+              <span class="pack-chip-emoji" aria-hidden="true">✨</span>
+              <span class="pack-chip-label">More soon</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <article class="device" aria-label="Soundboard remote control">
       <header class="device-header">
         <div class="share-wrapper">
           <button
@@ -164,6 +207,7 @@
         </button>
       </footer>
     </article>
+    </div>
    </main>
 
   <!-- Desktop-only social links -->

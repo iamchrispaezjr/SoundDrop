@@ -156,6 +156,14 @@
       label: "Fuck",
       src: "FAHH SFX.mp3",
     },
+    {
+      id: "imalive",
+      emoji: "⚡",
+      label: "I'm Alive!",
+      src: "I'm ALIVE!.mp3",
+      icon: "Aegon 2.png",
+      center: true,
+    },
   ];
   
 
@@ -187,6 +195,9 @@
   const volumeBtn = document.getElementById("volumeBtn");
   const volumeSlider = document.getElementById("volumeSlider");
   const stopBtn = document.getElementById("stopBtn");
+  const packBookmark = document.getElementById("packBookmark");
+  const packTab = document.getElementById("packTab");
+  const packTray = document.getElementById("packTray");
 
   // ---------------------------------------------------------------------------
   // Toast helper
@@ -525,8 +536,15 @@
     });
   }
 
-  function animateDisplay(emoji, label) {
-    displayEmoji.textContent = emoji;
+  function animateDisplay(emoji, label, iconSrc) {
+    if (iconSrc) {
+      displayEmoji.innerHTML =
+        '<img class="display-emoji-img" src="' +
+        iconSrc.replace(/"/g, "") +
+        '" alt="">';
+    } else {
+      displayEmoji.textContent = emoji;
+    }
     displayEmoji.setAttribute("aria-label", label);
     displayLabel.textContent = label;
 
@@ -549,7 +567,7 @@
 
   function onSoundClick(sound, btn) {
     flashButton(btn);
-    animateDisplay(sound.emoji, sound.label);
+    animateDisplay(sound.emoji, sound.label, sound.icon);
     playSound(sound);
   }
 
@@ -557,13 +575,19 @@
     SOUNDS.forEach(function (sound) {
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "sound-btn";
+      btn.className = "sound-btn" + (sound.center ? " sound-btn--center" : "");
       btn.setAttribute("aria-label", "Play " + sound.label);
       btn.dataset.id = sound.id;
 
+      const iconHtml = sound.icon
+        ? '<img class="sound-btn-emoji-img" src="' +
+          sound.icon.replace(/"/g, "") +
+          '" alt="">'
+        : sound.emoji;
+
       btn.innerHTML =
         '<span class="sound-btn-emoji" aria-hidden="true">' +
-        sound.emoji +
+        iconHtml +
         "</span>" +
         '<span class="sound-btn-label">' +
         sound.label +
@@ -894,6 +918,82 @@
     displayEmoji.textContent = "⏹";
     displayLabel.textContent = "Stopped";
     displayScreen.classList.remove("is-animating");
+  });
+
+  // ---------------------------------------------------------------------------
+  // Sound pack bookmark (placeholder)
+  // ---------------------------------------------------------------------------
+  function openPackTray() {
+    closeMenu();
+    closeShareMenu();
+    packTray.hidden = false;
+    requestAnimationFrame(function () {
+      packBookmark.classList.add("is-open");
+    });
+    packTab.setAttribute("aria-expanded", "true");
+    packTab.setAttribute("aria-label", "Close sound packs");
+  }
+
+  function closePackTray() {
+    packBookmark.classList.remove("is-open");
+    packTab.setAttribute("aria-expanded", "false");
+    packTab.setAttribute("aria-label", "Open sound packs");
+
+    packTray.addEventListener(
+      "transitionend",
+      function onEnd() {
+        if (!packBookmark.classList.contains("is-open")) {
+          packTray.hidden = true;
+        }
+        packTray.removeEventListener("transitionend", onEnd);
+      },
+      { once: true }
+    );
+  }
+
+  function togglePackTray() {
+    if (packBookmark.classList.contains("is-open")) {
+      closePackTray();
+    } else {
+      openPackTray();
+    }
+  }
+
+  packTab.addEventListener("click", function (e) {
+    e.stopPropagation();
+    togglePackTray();
+  });
+
+  packTray.addEventListener("click", function (e) {
+    e.stopPropagation();
+  });
+
+  packTray.querySelectorAll(".pack-chip:not([disabled])").forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      packTray.querySelectorAll(".pack-chip").forEach(function (other) {
+        other.classList.toggle("is-active", other === chip);
+      });
+
+      const label = chip.dataset.pack === "all" ? "All packs" : chip.textContent.trim();
+      const emoji = chip.dataset.emoji || "📑";
+      animateDisplay(emoji, label);
+      showToast(label + " — placeholder");
+    });
+  });
+
+  document.addEventListener("click", function (e) {
+    if (
+      packBookmark.classList.contains("is-open") &&
+      !packBookmark.contains(e.target)
+    ) {
+      closePackTray();
+    }
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && packBookmark.classList.contains("is-open")) {
+      closePackTray();
+    }
   });
 
   // ---------------------------------------------------------------------------
