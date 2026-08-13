@@ -590,7 +590,7 @@ body {
   justify-content: center;
   gap: 8px;
   width: 34px;
-  min-height: 118px;
+  min-height: 210px;
   margin-right: -1px;
   padding: 14px 4px 12px;
   border: 1px solid #5aadcc;
@@ -630,6 +630,7 @@ body {
 .pack-tab-text {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
+  white-space: nowrap;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -1397,6 +1398,7 @@ body {
   .pack-tab-text {
     writing-mode: horizontal-tb;
     transform: none;
+    white-space: nowrap;
     letter-spacing: 0.12em;
   }
 

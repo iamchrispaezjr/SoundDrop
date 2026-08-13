@@ -1153,13 +1153,13 @@
       packBookmark.classList.add("is-open");
     });
     packTab.setAttribute("aria-expanded", "true");
-    packTab.setAttribute("aria-label", "Close sound packs");
+    packTab.setAttribute("aria-label", "Close more SFX packs");
   }
 
   function closePackTray() {
     packBookmark.classList.remove("is-open");
     packTab.setAttribute("aria-expanded", "false");
-    packTab.setAttribute("aria-label", "Open sound packs");
+    packTab.setAttribute("aria-label", "Open more SFX packs");
 
     packTray.addEventListener(
       "transitionend",
