@@ -21,6 +21,9 @@
 
   const STORAGE_KEY = "sounddrop-bg";
   const MAX_STORAGE_BYTES = 2.5 * 1024 * 1024; // ~2.5 MB base64 limit for localStorage
+  const INTRO_STORAGE_KEY = "sounddrop-intro-at";
+  const INTRO_COOLDOWN_MS = 3 * 60 * 60 * 1000;
+  const INTRO_SRC = "Hello There!.mp3";
 
   // Preset options for the customizer panel
   const PRESET_COLORS = [
@@ -997,11 +1000,124 @@
   });
 
   // ---------------------------------------------------------------------------
+  // One-time intro sting (once per visitor, again after 3 hours)
+  // ---------------------------------------------------------------------------
+  function forceIntroFromUrl() {
+    try {
+      return new URLSearchParams(window.location.search).get("intro") === "1";
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function shouldPlayIntro() {
+    if (forceIntroFromUrl()) return true;
+    try {
+      const last = Number(localStorage.getItem(INTRO_STORAGE_KEY));
+      if (!Number.isFinite(last) || last <= 0) return true;
+      return Date.now() - last >= INTRO_COOLDOWN_MS;
+    } catch (err) {
+      return true;
+    }
+  }
+
+  function markIntroPlayed() {
+    try {
+      localStorage.setItem(INTRO_STORAGE_KEY, String(Date.now()));
+    } catch (err) {
+      /* ignore quota / private mode */
+    }
+  }
+
+  let introAudio = null;
+  let introPlayed = false;
+
+  function playIntroSound() {
+    if (introPlayed || isMuted) return Promise.resolve(false);
+    if (!shouldPlayIntro()) return Promise.resolve(false);
+
+    if (!introAudio) {
+      introAudio = new Audio(INTRO_SRC);
+      introAudio.preload = "auto";
+      introAudio.setAttribute("playsinline", "");
+      introAudio.load();
+    }
+
+    introAudio.volume = getVolume();
+
+    return introAudio
+      .play()
+      .then(function () {
+        introPlayed = true;
+        currentAudio = introAudio;
+        markIntroPlayed();
+        introAudio.addEventListener("ended", function () {
+          if (currentAudio === introAudio) {
+            currentAudio = null;
+          }
+        });
+        return true;
+      })
+      .catch(function () {
+        return false;
+      });
+  }
+
+  function initIntroSound() {
+    if (!shouldPlayIntro()) return;
+
+    introAudio = new Audio(INTRO_SRC);
+    introAudio.preload = "auto";
+    introAudio.setAttribute("playsinline", "");
+    introAudio.load();
+
+    function stopWaiting() {
+      document.removeEventListener("pointerdown", onUnlock, true);
+      document.removeEventListener("touchstart", onUnlock, true);
+      document.removeEventListener("click", onUnlock, true);
+      document.removeEventListener("keydown", onUnlock, true);
+      window.removeEventListener("load", tryIntro);
+      window.removeEventListener("pageshow", tryIntro);
+      document.removeEventListener("visibilitychange", onVisible);
+    }
+
+    function tryIntro() {
+      return playIntroSound().then(function (played) {
+        if (played) stopWaiting();
+        return played;
+      });
+    }
+
+    function onUnlock() {
+      tryIntro();
+    }
+
+    function onVisible() {
+      if (document.visibilityState === "visible") {
+        tryIntro();
+      }
+    }
+
+    tryIntro();
+    requestAnimationFrame(function () {
+      tryIntro();
+    });
+    window.addEventListener("load", tryIntro);
+    window.addEventListener("pageshow", tryIntro);
+    document.addEventListener("visibilitychange", onVisible);
+    document.addEventListener("pointerdown", onUnlock, true);
+    document.addEventListener("touchstart", onUnlock, true);
+    document.addEventListener("click", onUnlock, true);
+    document.addEventListener("keydown", onUnlock, true);
+  }
+
+  // ---------------------------------------------------------------------------
   // Init
   // ---------------------------------------------------------------------------
   buildPresetSwatches();
   buildKeypad();
   buildShareMenu();
+  initIntroSound();
 
   const savedBg = loadSavedBackground();
   if (savedBg) {
