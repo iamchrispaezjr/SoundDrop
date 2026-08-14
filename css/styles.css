@@ -1422,7 +1422,7 @@ body {
 
 @media (max-width: 480px) {
   .page {
-    padding: 56px 10px 12px;
+    padding: calc(56px + 5vh) 10px calc(12px + 5vh);
     align-items: stretch;
   }
 
