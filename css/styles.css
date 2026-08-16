@@ -1514,16 +1514,18 @@ body {
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: rgba(28, 28, 34, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: rgba(232, 232, 236, 0.7);
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    color: #141418;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
   }
 
   .social-links a:hover {
-    color: #fff;
-    background: rgba(42, 42, 50, 0.95);
-    border-color: rgba(91, 140, 255, 0.35);
+    color: #141418;
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(91, 140, 255, 0.45);
     transform: translateY(-2px);
   }
 
