@@ -217,8 +217,6 @@
   const displayScreen = document.getElementById("displayScreen");
   const displayEmoji = document.getElementById("displayEmoji");
   const displayLabel = document.getElementById("displayLabel");
-  const menuToggle = document.getElementById("menuToggle");
-  const dropdownMenu = document.getElementById("dropdownMenu");
   const shareToggle = document.getElementById("shareToggle");
   const shareDropdown = document.getElementById("shareDropdown");
   const shareList = document.getElementById("shareList");
@@ -1044,71 +1042,9 @@
     }
   });
 
-  // ---------------------------------------------------------------------------
-  // Hamburger menu
-  // ---------------------------------------------------------------------------
-  function openMenu() {
-    closeShareMenu();
-    dropdownMenu.hidden = false;
-    requestAnimationFrame(function () {
-      dropdownMenu.classList.add("is-open");
-    });
-    menuToggle.classList.add("is-active");
-    menuToggle.setAttribute("aria-expanded", "true");
-    menuToggle.setAttribute("aria-label", "Close menu");
-  }
-
   function closeMenu() {
-    dropdownMenu.classList.remove("is-open");
-    menuToggle.classList.remove("is-active");
-    menuToggle.setAttribute("aria-expanded", "false");
-    menuToggle.setAttribute("aria-label", "Open menu");
-
-    dropdownMenu.addEventListener(
-      "transitionend",
-      function onEnd() {
-        dropdownMenu.hidden = true;
-        dropdownMenu.removeEventListener("transitionend", onEnd);
-      },
-      { once: true }
-    );
+    /* hamburger menu removed */
   }
-
-  function toggleMenu() {
-    if (dropdownMenu.classList.contains("is-open")) {
-      closeMenu();
-    } else {
-      openMenu();
-    }
-  }
-
-  menuToggle.addEventListener("click", function (e) {
-    e.stopPropagation();
-    closeShareMenu();
-    toggleMenu();
-  });
-
-  document.addEventListener("click", function (e) {
-    if (
-      dropdownMenu.classList.contains("is-open") &&
-      !dropdownMenu.contains(e.target) &&
-      !menuToggle.contains(e.target)
-    ) {
-      closeMenu();
-    }
-  });
-
-  dropdownMenu.querySelectorAll("a").forEach(function (link) {
-    link.addEventListener("click", function () {
-      closeMenu();
-    });
-  });
-
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && dropdownMenu.classList.contains("is-open")) {
-      closeMenu();
-    }
-  });
 
   // ---------------------------------------------------------------------------
   // Utility controls

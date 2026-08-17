@@ -779,17 +779,14 @@ body {
   min-width: 0;
 }
 
-.share-wrapper,
-.menu-wrapper {
-  position: relative;
-}
-
 .share-wrapper {
-  justify-self: start;
+  position: relative;
+  justify-self: end;
 }
 
-.menu-wrapper {
-  justify-self: end;
+.home-link {
+  justify-self: start;
+  text-decoration: none;
 }
 
 /* Shared header icon button (share + hamburger) */
@@ -834,7 +831,8 @@ body {
   outline-offset: 2px;
 }
 
-.share-icon {
+.share-icon,
+.home-icon {
   width: 22px;
   height: 22px;
   color: inherit;
@@ -853,7 +851,8 @@ body {
 .share-dropdown {
   position: absolute;
   top: calc(100% + 8px);
-  left: 0;
+  left: auto;
+  right: 0;
   min-width: 280px;
   max-width: min(320px, calc(100vw - 48px));
   background: linear-gradient(160deg, #252530 0%, #1a1a22 100%);
@@ -863,7 +862,7 @@ body {
     0 12px 32px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(255, 255, 255, 0.04) inset;
   overflow: hidden;
-  transform-origin: top left;
+  transform-origin: top right;
   transition:
     opacity var(--transition-menu),
     transform var(--transition-menu),
