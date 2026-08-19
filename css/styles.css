@@ -695,6 +695,25 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  max-height: min(260px, 45vh);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+.pack-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pack-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pack-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 99px;
 }
 
 .pack-chip {
