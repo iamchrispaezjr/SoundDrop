@@ -1236,6 +1236,10 @@ body {
   outline-offset: 2px;
 }
 
+.sound-btn--placeholder {
+  opacity: 0.55;
+}
+
 .sound-btn:active,
 .sound-btn.is-pressed {
   transform: translateY(4px);

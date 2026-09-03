@@ -3,7 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Noisegoblin — Soundboard</title>
+  <title>Noisegoblin — Free Online Soundboard &amp; SFX Remote</title>
+  <meta name="description" content="Noisegoblin is a free online soundboard packed with meme sounds, reactions, laughs, sci-fi effects, and more. Play SFX instantly from your browser — no download required.">
+  <meta name="keywords" content="Noisegoblin, soundboard, free soundboard, online soundboard, SFX, sound effects, meme sounds, reaction sounds, funny sounds, sound pack">
+  <meta name="author" content="Noisegoblin">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0a0a0c">
+  <link rel="canonical" href="https://www.noisegoblin.com/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Noisegoblin">
+  <meta property="og:url" content="https://www.noisegoblin.com/">
+  <meta property="og:title" content="Noisegoblin — Free Online Soundboard &amp; SFX Remote">
+  <meta property="og:description" content="Play meme sounds, reactions, laughs, sci-fi effects, and more. A free browser soundboard remote — no download required.">
+  <meta property="og:image" content="https://www.noisegoblin.com/SoundDrop%20Favicon.png">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Noisegoblin — Free Online Soundboard">
+  <meta name="twitter:description" content="Play meme sounds, reactions, laughs, sci-fi effects, and more. Free browser soundboard — no download required.">
+  <meta name="twitter:image" content="https://www.noisegoblin.com/SoundDrop%20Favicon.png">
+
   <link rel="icon" type="image/png" href="SoundDrop Favicon.png">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -160,11 +179,11 @@
 
         <div class="pack-tray" id="packTray" hidden>
           <p class="pack-tray-kicker">Sound packs</p>
-          <p class="pack-tray-note">Placeholder — tap a pack to preview the idea</p>
+          <p class="pack-tray-note">Tap a pack to load its sounds</p>
           <div class="pack-list" role="list">
-            <button class="pack-chip is-active" type="button" data-pack="all" data-emoji="🎛️">
+            <button class="pack-chip is-active" type="button" data-pack="mix" data-emoji="🎛️">
               <span class="pack-chip-emoji" aria-hidden="true">🎛️</span>
-              <span class="pack-chip-label">All</span>
+              <span class="pack-chip-label">Mix</span>
             </button>
             <button class="pack-chip" type="button" data-pack="trending" data-emoji="🔥">
               <span class="pack-chip-emoji" aria-hidden="true">🔥</span>
@@ -186,17 +205,17 @@
               <span class="pack-chip-emoji" aria-hidden="true">🎬</span>
               <span class="pack-chip-label">Bits</span>
             </button>
-            <button class="pack-chip" type="button" data-pack="drops" data-emoji="💥">
-              <span class="pack-chip-emoji" aria-hidden="true">💥</span>
-              <span class="pack-chip-label">Drops</span>
+            <button class="pack-chip" type="button" data-pack="scifi" data-emoji="🛸">
+              <span class="pack-chip-emoji" aria-hidden="true">🛸</span>
+              <span class="pack-chip-label">Sci-Fi</span>
             </button>
             <button class="pack-chip" type="button" data-pack="animals" data-emoji="🐶">
               <span class="pack-chip-emoji" aria-hidden="true">🐶</span>
               <span class="pack-chip-label">Animals</span>
             </button>
-            <button class="pack-chip" type="button" data-pack="sports" data-emoji="🏟️">
-              <span class="pack-chip-emoji" aria-hidden="true">🏟️</span>
-              <span class="pack-chip-label">Sports</span>
+            <button class="pack-chip" type="button" data-pack="party" data-emoji="🎉">
+              <span class="pack-chip-emoji" aria-hidden="true">🎉</span>
+              <span class="pack-chip-label">Party</span>
             </button>
             <button class="pack-chip" type="button" data-pack="horror" data-emoji="👻">
               <span class="pack-chip-emoji" aria-hidden="true">👻</span>
@@ -206,9 +225,29 @@
               <span class="pack-chip-emoji" aria-hidden="true">🎮</span>
               <span class="pack-chip-label">Games</span>
             </button>
-            <button class="pack-chip is-soon" type="button" disabled>
-              <span class="pack-chip-emoji" aria-hidden="true">✨</span>
-              <span class="pack-chip-label">More soon</span>
+            <button class="pack-chip" type="button" data-pack="nature" data-emoji="🌿">
+              <span class="pack-chip-emoji" aria-hidden="true">🌿</span>
+              <span class="pack-chip-label">Nature</span>
+            </button>
+            <button class="pack-chip" type="button" data-pack="cartoons" data-emoji="📺">
+              <span class="pack-chip-emoji" aria-hidden="true">📺</span>
+              <span class="pack-chip-label">Cartoons</span>
+            </button>
+            <button class="pack-chip" type="button" data-pack="alerts" data-emoji="🔔">
+              <span class="pack-chip-emoji" aria-hidden="true">🔔</span>
+              <span class="pack-chip-label">Alerts</span>
+            </button>
+            <button class="pack-chip" type="button" data-pack="vehicles" data-emoji="🚗">
+              <span class="pack-chip-emoji" aria-hidden="true">🚗</span>
+              <span class="pack-chip-label">Vehicles</span>
+            </button>
+            <button class="pack-chip" type="button" data-pack="fantasy" data-emoji="🧙">
+              <span class="pack-chip-emoji" aria-hidden="true">🧙</span>
+              <span class="pack-chip-label">Fantasy</span>
+            </button>
+            <button class="pack-chip" type="button" data-pack="retro" data-emoji="🕹️">
+              <span class="pack-chip-emoji" aria-hidden="true">🕹️</span>
+              <span class="pack-chip-label">Retro</span>
             </button>
           </div>
         </div>

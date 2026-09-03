@@ -185,10 +185,457 @@
       label: "I'm Alive!",
       src: "I'm ALIVE!.mp3",
       icon: "Aegon 2.png",
-      center: true,
     },
   ];
-  
+
+  function soundById(id) {
+    for (let i = 0; i < SOUNDS.length; i++) {
+      if (SOUNDS[i].id === id) return SOUNDS[i];
+    }
+    return null;
+  }
+
+  function ph(id, emoji, label) {
+    return { id: id, emoji: emoji, label: label, placeholder: true };
+  }
+
+  function fx(id, emoji, label, src) {
+    return { id: id, emoji: emoji, label: label, src: src };
+  }
+
+  // 17 packs × 17 named slots (names only for empty slots)
+  const PACK_SOUNDS = {
+    trending: [
+      ph("tr-1", "🔥", "Viral"),
+      ph("tr-2", "📈", "Hot Take"),
+      ph("tr-3", "💥", "Boom"),
+      ph("tr-4", "⚡", "Zap"),
+      ph("tr-5", "🗣️", "Talking"),
+      ph("tr-6", "📣", "Shoutout"),
+      ph("tr-7", "🎧", "Drop"),
+      ph("tr-8", "🌀", "Spin"),
+      ph("tr-9", "⭐", "Star"),
+      ph("tr-10", "📌", "Pinned"),
+      ph("tr-11", "🚀", "Boost"),
+      ph("tr-12", "🎯", "Hit"),
+      ph("tr-13", "💬", "Reply"),
+      ph("tr-14", "🔁", "Repost"),
+      ph("tr-15", "❤️", "Liked"),
+      ph("tr-16", "🕒", "Just In"),
+      ph("tr-17", "🏆", "Top"),
+    ],
+    laughs: [
+      ph("la-1", "😂", "Laugh"),
+      ph("la-2", "😄", "Chuckle"),
+      ph("la-3", "🤭", "Giggle"),
+      ph("la-4", "😈", "Evil Laugh"),
+      ph("la-5", "🐷", "Snort"),
+      ph("la-6", "👥", "Crowd Laugh"),
+      ph("la-7", "😮‍💨", "Wheeze"),
+      ph("la-8", "🤣", "LOL"),
+      ph("la-9", "😆", "Cackle"),
+      ph("la-10", "🤡", "Clown Laugh"),
+      ph("la-11", "📺", "Sitcom Laugh"),
+      ph("la-12", "🧒", "Kid Laugh"),
+      ph("la-13", "👴", "Old Laugh"),
+      ph("la-14", "🎭", "Fake Laugh"),
+      ph("la-15", "💨", "Breath Laugh"),
+      ph("la-16", "🎤", "Audience Laugh"),
+      ph("la-17", "🤪", "Manic Laugh"),
+    ],
+    memes: [
+      ph("me-1", "😐", "Bruh"),
+      ph("me-2", "💀", "Oof"),
+      ph("me-3", "💥", "Vine Boom"),
+      ph("me-4", "😢", "Emotional"),
+      ph("me-5", "🥶", "Sheesh"),
+      ph("me-6", "💻", "Windows XP"),
+      ph("me-7", "👁️", "Sus"),
+      ph("me-8", "🚨", "Emergency"),
+      ph("me-9", "🗿", "Stone Face"),
+      ph("me-10", "📢", "Announcement"),
+      ph("me-11", "🧃", "Juice"),
+      ph("me-12", "🫡", "Respect"),
+      ph("me-13", "😵", "Brain Rot"),
+      ph("me-14", "📱", "Notification"),
+      ph("me-15", "🦴", "Bone Crack"),
+      ph("me-16", "🎬", "Cut"),
+      ph("me-17", "🫠", "Meltdown"),
+    ],
+    reactions: [
+      ph("re-1", "👏", "Applause"),
+      ph("re-2", "👎", "Boo"),
+      ph("re-3", "😮", "Wow"),
+      ph("re-4", "😲", "Gasp"),
+      ph("re-5", "🥹", "Aww"),
+      ph("re-6", "😰", "Oh No"),
+      ph("re-7", "🙌", "Yes"),
+      ph("re-8", "🙅", "No"),
+      ph("re-9", "🙄", "Eye Roll"),
+      ph("re-10", "🤔", "Hmm"),
+      ph("re-11", "😴", "Yawn"),
+      ph("re-12", "😬", "Awkward"),
+      ph("re-13", "🥳", "Celebrate"),
+      ph("re-14", "😤", "Frustrated"),
+      ph("re-15", "🫣", "Peek"),
+      ph("re-16", "🫡", "Salute"),
+      ph("re-17", "💔", "Heartbreak"),
+    ],
+    bits: [
+      ph("bi-1", "🥁", "Rimshot"),
+      ph("bi-2", "📀", "Scratch"),
+      ph("bi-3", "💰", "Cash"),
+      ph("bi-4", "📣", "Airhorn"),
+      ph("bi-5", "❌", "Fail"),
+      ph("bi-6", "🏆", "Victory"),
+      ph("bi-7", "🥁", "Ba Dum Tss"),
+      ph("bi-8", "💨", "Whoosh"),
+      ph("bi-9", "🎺", "Sad Trombone"),
+      ph("bi-10", "🎬", "Action"),
+      ph("bi-11", "🪄", "Magic"),
+      ph("bi-12", "🪞", "Reveal"),
+      ph("bi-13", "⏱️", "Tick Tock"),
+      ph("bi-14", "🛎️", "Ding"),
+      ph("bi-15", "📉", "Downer"),
+      ph("bi-16", "📈", "Stinger"),
+      ph("bi-17", "🎞️", "Transition"),
+    ],
+    scifi: [
+      ph("sf-1", "⚡", "I'm Alive!"),
+      ph("sf-2", "🔫", "Laser"),
+      ph("sf-3", "🌌", "Warp"),
+      ph("sf-4", "🤖", "Robot"),
+      ph("sf-5", "👽", "Alien"),
+      ph("sf-6", "✨", "Phaser"),
+      ph("sf-7", "📟", "Beep Boop"),
+      ph("sf-8", "🚀", "Hyperspace"),
+      ph("sf-9", "🛸", "UFO"),
+      ph("sf-10", "🛰️", "Satellite"),
+      ph("sf-11", "🔮", "Scanner"),
+      ph("sf-12", "⚙️", "Mech"),
+      ph("sf-13", "💫", "Teleport"),
+      ph("sf-14", "🛡️", "Shield"),
+      ph("sf-15", "💣", "Plasma"),
+      ph("sf-16", "📡", "Signal"),
+      ph("sf-17", "🧬", "Clone"),
+    ],
+    animals: [
+      ph("an-1", "🐶", "Bark"),
+      ph("an-2", "🐱", "Meow"),
+      ph("an-3", "🐔", "Chicken"),
+      ph("an-4", "🐮", "Moo"),
+      ph("an-5", "🐓", "Rooster"),
+      ph("an-6", "🦆", "Quack"),
+      ph("an-7", "🐺", "Howl"),
+      ph("an-8", "🦗", "Cricket"),
+      ph("an-9", "🐴", "Neigh"),
+      ph("an-10", "🐷", "Oink"),
+      ph("an-11", "🐑", "Baa"),
+      ph("an-12", "🦁", "Roar"),
+      ph("an-13", "🐘", "Trumpet"),
+      ph("an-14", "🐸", "Ribbit"),
+      ph("an-15", "🐝", "Buzz"),
+      ph("an-16", "🦉", "Hoot"),
+      ph("an-17", "🐒", "Chatter"),
+    ],
+    party: [
+      ph("pa-1", "👏", "Applause"),
+      ph("pa-2", "📣", "Airhorn"),
+      ph("pa-3", "💰", "Cash"),
+      ph("pa-4", "🍾", "Pop"),
+      ph("pa-5", "🎊", "Confetti"),
+      ph("pa-6", "🥳", "Cheer"),
+      ph("pa-7", "😗", "Whistle"),
+      ph("pa-8", "3️⃣", "Countdown"),
+      ph("pa-9", "🎂", "Birthday"),
+      ph("pa-10", "🎈", "Balloon"),
+      ph("pa-11", "🎆", "Firework"),
+      ph("pa-12", "🪩", "Disco"),
+      ph("pa-13", "🎷", "Jam"),
+      ph("pa-14", "🥂", "Toast"),
+      ph("pa-15", "🕺", "Dance"),
+      ph("pa-16", "🎁", "Surprise"),
+      ph("pa-17", "📢", "Hype"),
+    ],
+    horror: [
+      ph("ho-1", "⭐", "Scream"),
+      ph("ho-2", "🚪", "Creak"),
+      ph("ho-3", "⛈️", "Thunder"),
+      ph("ho-4", "👻", "Ghost"),
+      ph("ho-5", "😱", "Jumpscare"),
+      ph("ho-6", "❤️", "Heartbeat"),
+      ph("ho-7", "🐺", "Howl"),
+      ph("ho-8", "🗣️", "Whisper"),
+      ph("ho-9", "⛓️", "Chains"),
+      ph("ho-10", "🩸", "Drip"),
+      ph("ho-11", "🪦", "Grave"),
+      ph("ho-12", "🕷️", "Crawl"),
+      ph("ho-13", "🔦", "Flicker"),
+      ph("ho-14", "🪟", "Rattle"),
+      ph("ho-15", "🧛", "Hiss"),
+      ph("ho-16", "🦇", "Flutter"),
+      ph("ho-17", "🌑", "Umbra"),
+    ],
+    games: [
+      ph("ga-1", "🚨", "Emergency"),
+      ph("ga-2", "👁️", "Sus"),
+      ph("ga-3", "✅", "Typical"),
+      ph("ga-4", "⬆️", "Level Up"),
+      ph("ga-5", "☠️", "Game Over"),
+      ph("ga-6", "🪙", "Coin"),
+      ph("ga-7", "🍄", "Power Up"),
+      ph("ga-8", "🥊", "Hit"),
+      ph("ga-9", "🏁", "Start"),
+      ph("ga-10", "💎", "Loot"),
+      ph("ga-11", "🛡️", "Block"),
+      ph("ga-12", "🏹", "Shot"),
+      ph("ga-13", "🧩", "Puzzle"),
+      ph("ga-14", "🧨", "Explosion"),
+      ph("ga-15", "🕹️", "Select"),
+      ph("ga-16", "🥇", "Quest Done"),
+      ph("ga-17", "👾", "Boss"),
+    ],
+    nature: [
+      ph("na-1", "🌧️", "Rain"),
+      ph("na-2", "💨", "Wind"),
+      ph("na-3", "🌊", "Waves"),
+      ph("na-4", "🔥", "Campfire"),
+      ph("na-5", "🐦", "Birdsong"),
+      ph("na-6", "💧", "Creek"),
+      ph("na-7", "🍃", "Leaves"),
+      ph("na-8", "⚡", "Lightning"),
+      ph("na-9", "🌋", "Rumble"),
+      ph("na-10", "🧊", "Ice Crack"),
+      ph("na-11", "🌵", "Desert"),
+      ph("na-12", "🌲", "Forest"),
+      ph("na-13", "🪨", "Rockslide"),
+      ph("na-14", "🦋", "Flutter"),
+      ph("na-15", "🌙", "Night"),
+      ph("na-16", "☀️", "Dawn"),
+      ph("na-17", "🌈", "After Rain"),
+    ],
+    cartoons: [
+      ph("ca-1", "🏃", "Zip"),
+      ph("ca-2", "💫", "Bonk"),
+      ph("ca-3", "🌀", "Spin Out"),
+      ph("ca-4", "🫠", "Squish"),
+      ph("ca-5", "🛎️", "Boing"),
+      ph("ca-6", "💨", "Zoom"),
+      ph("ca-7", "🧨", "Kaboom"),
+      ph("ca-8", "🪄", "Poof"),
+      ph("ca-9", "🫠", "Slide"),
+      ph("ca-10", "🔔", "Twang"),
+      ph("ca-11", "😛", "Raspberry"),
+      ph("ca-12", "🪜", "Fall Down"),
+      ph("ca-13", "🎈", "Deflate"),
+      ph("ca-14", "🧲", "Stretch"),
+      ph("ca-15", "🧃", "Gulp"),
+      ph("ca-16", "👟", "Squeak Step"),
+      ph("ca-17", "🎭", "Take"),
+    ],
+    alerts: [
+      ph("al-1", "🔔", "Ping"),
+      ph("al-2", "⏰", "Alarm"),
+      ph("al-3", "📢", "Broadcast"),
+      ph("al-4", "🚨", "Siren"),
+      ph("al-5", "✉️", "Message"),
+      ph("al-6", "📞", "Ring"),
+      ph("al-7", "⚠️", "Warning"),
+      ph("al-8", "✅", "Success"),
+      ph("al-9", "❌", "Error"),
+      ph("al-10", "🔋", "Low Battery"),
+      ph("al-11", "📶", "Connected"),
+      ph("al-12", "🔒", "Locked"),
+      ph("al-13", "🔓", "Unlocked"),
+      ph("al-14", "📥", "Download Done"),
+      ph("al-15", "🗓️", "Reminder"),
+      ph("al-16", "🧭", "Chime"),
+      ph("al-17", "🛰️", "Beacon"),
+    ],
+    vehicles: [
+      ph("ve-1", "🚗", "Engine"),
+      ph("ve-2", "🚕", "Horn"),
+      ph("ve-3", "🛞", "Skid"),
+      ph("ve-4", "🚲", "Bike Bell"),
+      ph("ve-5", "🚂", "Train"),
+      ph("ve-6", "✈️", "Jet"),
+      ph("ve-7", "🚁", "Chopper"),
+      ph("ve-8", "🚤", "Boat"),
+      ph("ve-9", "🚌", "Bus Door"),
+      ph("ve-10", "🚓", "Siren"),
+      ph("ve-11", "🛵", "Scooter"),
+      ph("ve-12", "🚛", "Truck"),
+      ph("ve-13", "🚀", "Launch"),
+      ph("ve-14", "🛑", "Brake"),
+      ph("ve-15", "⛽", "Fuel Cap"),
+      ph("ve-16", "🛠️", "Garage"),
+      ph("ve-17", "🏁", "Rev"),
+    ],
+    fantasy: [
+      ph("fa-1", "🪄", "Spell"),
+      ph("fa-2", "🐉", "Dragon"),
+      ph("fa-3", "⚔️", "Sword"),
+      ph("fa-4", "🛡️", "Armor"),
+      ph("fa-5", "🏰", "Castle"),
+      ph("fa-6", "🧝", "Elf"),
+      ph("fa-7", "🧙", "Wizard"),
+      ph("fa-8", "💎", "Gem"),
+      ph("fa-9", "🏹", "Arrow"),
+      ph("fa-10", "🔥", "Fireball"),
+      ph("fa-11", "❄️", "Frost"),
+      ph("fa-12", "🌪️", "Tornado"),
+      ph("fa-13", "📜", "Scroll"),
+      ph("fa-14", "🧚", "Fairy"),
+      ph("fa-15", "🕳️", "Portal"),
+      ph("fa-16", "🗡️", "Clash"),
+      ph("fa-17", "👑", "Quest"),
+    ],
+    retro: [
+      ph("rt-1", "🕹️", "8-Bit Jump"),
+      ph("rt-2", "👾", "Pixel Hit"),
+      ph("rt-3", "📼", "VHS"),
+      ph("rt-4", "📺", "Static"),
+      ph("rt-5", "💾", "Dial-Up"),
+      ph("rt-6", "📟", "Pager"),
+      ph("rt-7", "💿", "CD Skip"),
+      ph("rt-8", "📷", "Flash"),
+      ph("rt-9", "☎️", "Rotary"),
+      ph("rt-10", "🖨️", "Printer"),
+      ph("rt-11", "🎮", "Insert Coin"),
+      ph("rt-12", "🧱", "Block Break"),
+      ph("rt-13", "🟩", "Blip"),
+      ph("rt-14", "🟥", "Game Select"),
+      ph("rt-15", "🟨", "Power On"),
+      ph("rt-16", "🟪", "Glitch"),
+      ph("rt-17", "🟫", "Continue?"),
+    ],
+  };
+
+  // Extra royalty-free clips for the session Mix pool
+  const EXTRA_SFX = [
+    { id: "sfx-alien", emoji: "👽", label: "Alien", src: "sfx/alien.mp3" },
+    { id: "sfx-bark", emoji: "🐶", label: "Bark", src: "sfx/bark.mp3" },
+    { id: "sfx-beep", emoji: "📟", label: "Beep Boop", src: "sfx/beep-boop.mp3" },
+    { id: "sfx-cheer", emoji: "🥳", label: "Cheer", src: "sfx/cheer.mp3" },
+    { id: "sfx-chicken", emoji: "🐔", label: "Chicken", src: "sfx/chicken.mp3" },
+    { id: "sfx-chuckle", emoji: "😄", label: "Chuckle", src: "sfx/chuckle.mp3" },
+    { id: "sfx-coin", emoji: "🪙", label: "Coin", src: "sfx/coin.mp3" },
+    { id: "sfx-creak", emoji: "🚪", label: "Creak", src: "sfx/creak.mp3" },
+    { id: "sfx-cricket", emoji: "🦗", label: "Cricket", src: "sfx/cricket.mp3" },
+    { id: "sfx-crowd", emoji: "👥", label: "Crowd Laugh", src: "sfx/crowd-laugh.mp3" },
+    { id: "sfx-fail", emoji: "❌", label: "Fail", src: "sfx/fail.mp3" },
+    { id: "sfx-gameover", emoji: "☠️", label: "Game Over", src: "sfx/game-over.mp3" },
+    { id: "sfx-ghost", emoji: "👻", label: "Ghost", src: "sfx/ghost.mp3" },
+    { id: "sfx-giggle", emoji: "🤭", label: "Giggle", src: "sfx/giggle.mp3" },
+    { id: "sfx-heartbeat", emoji: "❤️", label: "Heartbeat", src: "sfx/heartbeat.mp3" },
+    { id: "sfx-hit", emoji: "🥊", label: "Hit", src: "sfx/hit.mp3" },
+    { id: "sfx-howl", emoji: "🐺", label: "Howl", src: "sfx/howl.mp3" },
+    { id: "sfx-hyperspace", emoji: "🚀", label: "Hyperspace", src: "sfx/hyperspace.mp3" },
+    { id: "sfx-jumpscare", emoji: "😱", label: "Jumpscare", src: "sfx/jumpscare.mp3" },
+    { id: "sfx-laser", emoji: "🔫", label: "Laser", src: "sfx/laser.mp3" },
+    { id: "sfx-levelup", emoji: "⬆️", label: "Level Up", src: "sfx/level-up.mp3" },
+    { id: "sfx-meow", emoji: "🐱", label: "Meow", src: "sfx/meow.mp3" },
+    { id: "sfx-moo", emoji: "🐮", label: "Moo", src: "sfx/moo.mp3" },
+    { id: "sfx-horn", emoji: "🎊", label: "Party Horn", src: "sfx/party-horn.mp3" },
+    { id: "sfx-phaser", emoji: "✨", label: "Phaser", src: "sfx/phaser.mp3" },
+    { id: "sfx-pop", emoji: "🍾", label: "Pop", src: "sfx/pop.mp3" },
+    { id: "sfx-powerup", emoji: "🍄", label: "Power Up", src: "sfx/power-up.mp3" },
+    { id: "sfx-quack", emoji: "🦆", label: "Quack", src: "sfx/quack.mp3" },
+    { id: "sfx-robot", emoji: "🤖", label: "Robot", src: "sfx/robot.mp3" },
+    { id: "sfx-rooster", emoji: "🐓", label: "Rooster", src: "sfx/rooster.mp3" },
+    { id: "sfx-trombone", emoji: "🎺", label: "Sad Trombone", src: "sfx/sad-trombone.mp3" },
+    { id: "sfx-thunder", emoji: "⛈️", label: "Thunder", src: "sfx/thunder.mp3" },
+    { id: "sfx-victory", emoji: "🏆", label: "Victory", src: "sfx/victory.mp3" },
+    { id: "sfx-warp", emoji: "🌌", label: "Warp", src: "sfx/warp.mp3" },
+    { id: "sfx-whistle", emoji: "😗", label: "Whistle", src: "sfx/whistle.mp3" },
+    { id: "sfx-whoosh", emoji: "💨", label: "Whoosh", src: "sfx/whoosh.mp3" },
+  ];
+
+  const MIX_SIZE = 17;
+  const MIX_SESSION_KEY = "noisegoblin-session-mix";
+
+  function shuffleList(items) {
+    const list = items.slice();
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = list[i];
+      list[i] = list[j];
+      list[j] = tmp;
+    }
+    return list;
+  }
+
+  function cloneSound(sound) {
+    return {
+      id: sound.id,
+      emoji: sound.emoji,
+      label: sound.label,
+      src: sound.src,
+      icon: sound.icon,
+      placeholder: sound.placeholder,
+    };
+  }
+
+  function playablePool() {
+    const pool = [];
+    const seen = {};
+
+    function add(sound) {
+      if (!sound || !sound.src || seen[sound.id]) return;
+      seen[sound.id] = true;
+      pool.push(cloneSound(sound));
+    }
+
+    SOUNDS.forEach(add);
+    EXTRA_SFX.forEach(add);
+    return pool;
+  }
+
+  function withCenteredSeventeenth(list) {
+    return list.map(function (sound, index) {
+      const copy = cloneSound(sound);
+      copy.center = list.length === MIX_SIZE && index === MIX_SIZE - 1;
+      return copy;
+    });
+  }
+
+  function buildSessionMix() {
+    try {
+      const raw = sessionStorage.getItem(MIX_SESSION_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (Array.isArray(saved) && saved.length === MIX_SIZE) {
+          return withCenteredSeventeenth(saved);
+        }
+      }
+    } catch (err) {
+      /* ignore bad session data */
+    }
+
+    const picked = shuffleList(playablePool()).slice(0, MIX_SIZE);
+    while (picked.length < MIX_SIZE) {
+      picked.push(cloneSound(SOUNDS[picked.length % SOUNDS.length]));
+    }
+
+    try {
+      sessionStorage.setItem(MIX_SESSION_KEY, JSON.stringify(picked));
+    } catch (err) {
+      /* private mode / quota */
+    }
+
+    return withCenteredSeventeenth(picked);
+  }
+
+  let sessionMix = null;
+
+  function getSessionMix() {
+    if (!sessionMix) {
+      sessionMix = buildSessionMix();
+    }
+    return sessionMix;
+  }
+
+  let activePack = "mix";
 
   // ---------------------------------------------------------------------------
   // DOM references
@@ -788,15 +1235,39 @@
   function onSoundClick(sound, btn) {
     flashButton(btn);
     animateDisplay(sound.emoji, sound.label, sound.icon);
+    if (sound.placeholder || !sound.src) {
+      showToast(sound.label + " — coming soon");
+      return;
+    }
     playSound(sound);
   }
 
-  function buildKeypad() {
-    SOUNDS.forEach(function (sound) {
+  function soundsForPack(packId) {
+    if (!packId || packId === "mix" || packId === "all") {
+      return getSessionMix();
+    }
+    if (!PACK_SOUNDS[packId]) {
+      return getSessionMix();
+    }
+    return withCenteredSeventeenth(PACK_SOUNDS[packId].filter(Boolean));
+  }
+
+  function buildKeypad(packId) {
+    const list = soundsForPack(packId || activePack);
+    keypadEl.innerHTML = "";
+
+    list.forEach(function (sound, index) {
+      const isCenter = list.length === MIX_SIZE && index === MIX_SIZE - 1;
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "sound-btn" + (sound.center ? " sound-btn--center" : "");
-      btn.setAttribute("aria-label", "Play " + sound.label);
+      btn.className =
+        "sound-btn" +
+        (isCenter ? " sound-btn--center" : "") +
+        (sound.placeholder ? " sound-btn--placeholder" : "");
+      btn.setAttribute(
+        "aria-label",
+        sound.placeholder ? sound.label + " (coming soon)" : "Play " + sound.label
+      );
       btn.dataset.id = sound.id;
 
       const iconHtml = sound.icon
@@ -824,9 +1295,9 @@
   // ---------------------------------------------------------------------------
   // Share menu
   // ---------------------------------------------------------------------------
-  const SHARE_TITLE = "Check out SFX Remote";
+  const SHARE_TITLE = "Check out Noisegoblin";
   const SHARE_MESSAGE =
-    "Check out SFX Remote — a fun soundboard remote!";
+    "Check out Noisegoblin — a free online soundboard remote!";
 
   const SHARE_ICONS = {
     facebook:
@@ -1132,10 +1603,24 @@
         other.classList.toggle("is-active", other === chip);
       });
 
-      const label = chip.dataset.pack === "all" ? "All packs" : chip.textContent.trim();
+      activePack = chip.dataset.pack || "mix";
+      buildKeypad(activePack);
+
+      const label = activePack === "mix" ? "Mix" : chip.textContent.trim();
       const emoji = chip.dataset.emoji || "📑";
       animateDisplay(emoji, label);
-      showToast(label + " — placeholder");
+
+      const count = soundsForPack(activePack).length;
+      const coming = soundsForPack(activePack).filter(function (s) {
+        return s.placeholder;
+      }).length;
+      if (activePack === "mix") {
+        showToast("Mix — fresh random set for this session");
+      } else if (coming > 0) {
+        showToast(label + " — " + count + " sounds (" + coming + " soon)");
+      } else {
+        showToast(label + " — " + count + " sounds");
+      }
     });
   });
 
