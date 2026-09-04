@@ -1512,7 +1512,7 @@ body {
   align-content: flex-start;
   gap: 8px;
   padding: 12px 16px 4px;
-  max-height: 132px;
+  max-height: 210px;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: thin;
