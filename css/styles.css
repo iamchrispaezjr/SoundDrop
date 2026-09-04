@@ -815,9 +815,28 @@ body {
   justify-self: end;
 }
 
-.home-link {
+.header-leading {
+  position: relative;
+  width: 40px;
+  height: 40px;
   justify-self: start;
-  text-decoration: none;
+}
+
+.header-spacer {
+  width: 40px;
+  height: 40px;
+}
+
+.header-icon-btn.packs-header-btn {
+  display: none;
+  position: absolute;
+  inset: 0;
+}
+
+.packs-icon {
+  width: 18px;
+  height: 18px;
+  color: inherit;
 }
 
 /* Shared header icon button (share + hamburger) */
@@ -862,8 +881,7 @@ body {
   outline-offset: 2px;
 }
 
-.share-icon,
-.home-icon {
+.share-icon {
   width: 22px;
   height: 22px;
   color: inherit;
@@ -1747,10 +1765,18 @@ body {
 }
 
 @media (max-width: 900px) {
+  .header-spacer {
+    visibility: hidden;
+  }
+
+  .header-icon-btn.packs-header-btn {
+    display: flex;
+  }
+
   .pack-bookmark {
-    position: fixed;
-    top: 16px;
-    left: 16px;
+    position: absolute;
+    top: 58px;
+    left: 14px;
     right: auto;
     z-index: var(--z-float);
     flex-direction: column;
@@ -1759,32 +1785,13 @@ body {
   }
 
   .pack-tab {
-    flex-direction: row;
-    width: auto;
-    min-height: 0;
-    height: 42px;
-    margin-right: 0;
-    padding: 0 14px;
-    gap: 8px;
-    border: 1px solid #5aadcc;
-    border-radius: 12px;
-  }
-
-  .pack-tab:active {
-    transform: translateY(1px);
-  }
-
-  .pack-tab-text {
-    writing-mode: horizontal-tb;
-    transform: none;
-    white-space: nowrap;
-    letter-spacing: 0.12em;
+    display: none;
   }
 
   .pack-tray {
     position: absolute;
     left: 0;
-    top: calc(100% + 8px);
+    top: 0;
     width: 200px;
     max-width: 0;
     border: 1px solid var(--device-border);
@@ -1811,12 +1818,8 @@ body {
   }
 
   .pack-bookmark {
-    top: 12px;
-    left: 12px;
-  }
-
-  .pack-tab {
-    height: 40px;
+    top: 60px;
+    left: 14px;
   }
 
   .bg-toggle-btn {
@@ -1914,6 +1917,11 @@ body {
 
 .social-links svg {
   fill: currentColor;
+}
+
+.social-links .social-icon-stroke {
+  fill: none;
+  stroke: currentColor;
 }
 
 @media (min-width: 768px) {

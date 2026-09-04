@@ -827,6 +827,7 @@
   const mixPickerCats = document.getElementById("mixPickerCats");
   const packBookmark = document.getElementById("packBookmark");
   const packTab = document.getElementById("packTab");
+  const packsHeaderBtn = document.getElementById("packsHeaderBtn");
   const packTray = document.getElementById("packTray");
 
   // ---------------------------------------------------------------------------
@@ -1733,6 +1734,18 @@
   // ---------------------------------------------------------------------------
   // Sound pack bookmark (placeholder)
   // ---------------------------------------------------------------------------
+  function setPackControlsOpen(isOpen) {
+    const label = isOpen ? "Close more SFX packs" : "Open more SFX packs";
+    const expanded = isOpen ? "true" : "false";
+    packTab.setAttribute("aria-expanded", expanded);
+    packTab.setAttribute("aria-label", label);
+    if (packsHeaderBtn) {
+      packsHeaderBtn.setAttribute("aria-expanded", expanded);
+      packsHeaderBtn.setAttribute("aria-label", label);
+      packsHeaderBtn.classList.toggle("is-active", isOpen);
+    }
+  }
+
   function openPackTray() {
     closeMenu();
     closeShareMenu();
@@ -1740,14 +1753,12 @@
     requestAnimationFrame(function () {
       packBookmark.classList.add("is-open");
     });
-    packTab.setAttribute("aria-expanded", "true");
-    packTab.setAttribute("aria-label", "Close more SFX packs");
+    setPackControlsOpen(true);
   }
 
   function closePackTray() {
     packBookmark.classList.remove("is-open");
-    packTab.setAttribute("aria-expanded", "false");
-    packTab.setAttribute("aria-label", "Open more SFX packs");
+    setPackControlsOpen(false);
 
     packTray.addEventListener(
       "transitionend",
@@ -1769,10 +1780,24 @@
     }
   }
 
+  function isPackControlTarget(target) {
+    return (
+      packBookmark.contains(target) ||
+      (packsHeaderBtn && packsHeaderBtn.contains(target))
+    );
+  }
+
   packTab.addEventListener("click", function (e) {
     e.stopPropagation();
     togglePackTray();
   });
+
+  if (packsHeaderBtn) {
+    packsHeaderBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      togglePackTray();
+    });
+  }
 
   packTray.addEventListener("click", function (e) {
     e.stopPropagation();
@@ -1811,10 +1836,7 @@
   });
 
   document.addEventListener("click", function (e) {
-    if (
-      packBookmark.classList.contains("is-open") &&
-      !packBookmark.contains(e.target)
-    ) {
+    if (packBookmark.classList.contains("is-open") && !isPackControlTarget(e.target)) {
       closePackTray();
     }
   });
