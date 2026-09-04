@@ -128,7 +128,7 @@ body {
 .float-tools {
   position: fixed;
   top: 16px;
-  right: 16px;
+  left: 16px;
   z-index: var(--z-float);
   display: flex;
   gap: 8px;
@@ -2137,11 +2137,12 @@ body.is-keypad-dragging .keypad {
   }
 }
 
-/* --- Donate (top-left) --- */
+/* --- Donate (top-right) --- */
 .donate-btn {
   position: fixed;
   top: 14px;
-  left: 14px;
+  right: 14px;
+  left: auto;
   z-index: var(--z-float);
   display: inline-flex;
   align-items: center;
