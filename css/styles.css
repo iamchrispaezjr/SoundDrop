@@ -1189,14 +1189,14 @@ body {
 
 .keypad {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 16px;
 }
 
 @media (min-width: 380px) {
   .keypad {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 9px;
   }
 }
@@ -1220,6 +1220,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 4px;
+  min-width: 0;
   min-height: 72px;
   padding: 10px 6px 8px;
   border: none;
@@ -1227,6 +1228,7 @@ body {
   background: linear-gradient(180deg, var(--btn-face) 0%, var(--btn-face-active) 100%);
   color: var(--btn-text);
   cursor: pointer;
+  overflow: hidden;
   box-shadow:
     0 2px 0 var(--btn-highlight) inset,
     0 1px 0 rgba(255, 255, 255, 0.04) inset,
@@ -1296,6 +1298,8 @@ body {
 .sound-btn-emoji-img {
   width: 28px;
   height: 28px;
+  max-width: 100%;
+  flex-shrink: 0;
 }
 
 .display-emoji-img {

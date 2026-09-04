@@ -199,18 +199,20 @@
     return { id: id, emoji: emoji, label: label, placeholder: true };
   }
 
-  function fx(id, emoji, label, src) {
-    return { id: id, emoji: emoji, label: label, src: src };
+  function fx(id, emoji, label, src, icon) {
+    const sound = { id: id, emoji: emoji, label: label, src: src };
+    if (icon) sound.icon = icon;
+    return sound;
   }
 
   // 17 packs × 17 named slots (names only for empty slots)
   const PACK_SOUNDS = {
     laughs: [
       soundById("laugh"),
-      ph("la-2", "😄", "Chuckle"),
-      ph("la-3", "🤭", "Giggle"),
-      ph("la-4", "😈", "Evil Laugh"),
-      ph("la-5", "🐷", "Snort"),
+      fx("jstar-laugh", "😂", "JStar", "JStar Laughing.mp3", "JStar Laughing.png"),
+      fx("sponge-laugh", "🧽", "Sponge", "Sponge Laugh.m4a", "Sponge Laugh.jpg"),
+      fx("hyena-laugh", "😆", "Hyena", "Hyena Laugh.mp3", "Hyena Laugh.jpg"),
+      fx("emperor", "⚡", "Emperor", "Emperor.mp3", "Emperor.jpg"),
       ph("la-6", "👥", "Crowd Laugh"),
       ph("la-7", "😮‍💨", "Wheeze"),
       ph("la-8", "🤣", "LOL"),
@@ -280,6 +282,25 @@
       ph("bi-15", "📉", "Downer"),
       ph("bi-16", "📈", "Stinger"),
       ph("bi-17", "🎞️", "Transition"),
+    ],
+    stings: [
+      soundById("error"),
+      ph("st-2", "🥁", "Rimshot"),
+      ph("st-3", "🎺", "Sad Trombone"),
+      ph("st-4", "🎻", "Suspense"),
+      ph("st-5", "🎹", "Piano Hit"),
+      ph("st-6", "🔔", "Chime"),
+      ph("st-7", "📻", "Radio Sting"),
+      ph("st-8", "🎬", "Cue In"),
+      ph("st-9", "📉", "Downer"),
+      ph("st-10", "📈", "Uplift"),
+      ph("st-11", "⚡", "Shock"),
+      ph("st-12", "🪞", "Reveal"),
+      ph("st-13", "🕰️", "Time Pass"),
+      ph("st-14", "🎭", "Drama"),
+      ph("st-15", "💨", "Whoosh Hit"),
+      ph("st-16", "🛎️", "Ding"),
+      ph("st-17", "📼", "Outro"),
     ],
     scifi: [
       ph("sf-1", "⚡", "I'm Alive!"),
@@ -497,7 +518,6 @@
     "drumroll",
     "scratch",
     "cash",
-    "error",
     "success",
     "cheer",
     "emergency",
@@ -506,6 +526,10 @@
 
   // Extra royalty-free clips that fill out Mix when leftovers are under 17
   const EXTRA_SFX = [
+    { id: "jstar-laugh", emoji: "😂", label: "JStar", src: "JStar Laughing.mp3", icon: "JStar Laughing.png" },
+    { id: "sponge-laugh", emoji: "🧽", label: "Sponge", src: "Sponge Laugh.m4a", icon: "Sponge Laugh.jpg" },
+    { id: "hyena-laugh", emoji: "😆", label: "Hyena", src: "Hyena Laugh.mp3", icon: "Hyena Laugh.jpg" },
+    { id: "emperor", emoji: "⚡", label: "Emperor", src: "Emperor.mp3", icon: "Emperor.jpg" },
     { id: "sfx-alien", emoji: "👽", label: "Alien", src: "sfx/alien.mp3" },
     { id: "sfx-bark", emoji: "🐶", label: "Bark", src: "sfx/bark.mp3" },
     { id: "sfx-beep", emoji: "📟", label: "Beep Boop", src: "sfx/beep-boop.mp3" },
@@ -1399,7 +1423,7 @@
     if (!PACK_SOUNDS[packId]) {
       return getHomeSounds();
     }
-    return withCenteredSeventeenth(PACK_SOUNDS[packId].filter(Boolean));
+    return withCenteredSeventeenth(PACK_SOUNDS[packId].filter(Boolean).slice(0, PACK_SIZE));
   }
 
   function buildKeypad(packId) {
