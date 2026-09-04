@@ -1488,6 +1488,71 @@ body {
   color: var(--btn-text);
 }
 
+.mix-picker-cats {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 8px;
+  padding: 12px 16px 4px;
+  max-height: 132px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mix-picker-cats::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mix-picker-cats::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 99px;
+}
+
+.mix-picker-cat {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--btn-label);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.mix-picker-cat:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--btn-text);
+}
+
+.mix-picker-cat:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.mix-picker-cat.is-active {
+  border-color: rgba(91, 140, 255, 0.5);
+  background: rgba(91, 140, 255, 0.16);
+  color: var(--btn-text);
+}
+
+.mix-picker-cat-emoji {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
 .mix-picker-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1496,6 +1561,15 @@ body {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
+}
+
+.mix-picker-empty {
+  grid-column: 1 / -1;
+  margin: 18px 0;
+  text-align: center;
+  color: var(--btn-label);
+  font-size: 0.78rem;
+  line-height: 1.4;
 }
 
 .mix-pick {

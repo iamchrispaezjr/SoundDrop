@@ -824,6 +824,7 @@
   const mixPickerDefaults = document.getElementById("mixPickerDefaults");
   const mixPickerSurprise = document.getElementById("mixPickerSurprise");
   const mixPickerSave = document.getElementById("mixPickerSave");
+  const mixPickerCats = document.getElementById("mixPickerCats");
   const packBookmark = document.getElementById("packBookmark");
   const packTab = document.getElementById("packTab");
   const packTray = document.getElementById("packTray");
@@ -1965,6 +1966,134 @@
   // Customize home remote picker
   // ---------------------------------------------------------------------------
   let pickerSelectedIds = [];
+  let pickerCategory = "all";
+
+  function getPackChipMeta() {
+    const meta = {};
+    packTray.querySelectorAll(".pack-chip[data-pack]").forEach(function (chip) {
+      const id = chip.dataset.pack;
+      if (!id || id === "all" || id === "mix" || id === "trending") return;
+      meta[id] = {
+        id: id,
+        label: (chip.querySelector(".pack-chip-label") || {}).textContent || id,
+        emoji: chip.dataset.emoji || "🎛️",
+      };
+    });
+    return meta;
+  }
+
+  function buildPickerPackIndex() {
+    const bySound = {};
+    const byPack = {};
+    const labelToPacks = {};
+    const packMeta = getPackChipMeta();
+
+    Object.keys(PACK_SOUNDS).forEach(function (packId) {
+      byPack[packId] = {};
+      (PACK_SOUNDS[packId] || []).forEach(function (sound) {
+        if (!sound) return;
+        const labelKey = String(sound.label || "")
+          .trim()
+          .toLowerCase();
+        if (labelKey) {
+          if (!labelToPacks[labelKey]) labelToPacks[labelKey] = [];
+          if (labelToPacks[labelKey].indexOf(packId) === -1) {
+            labelToPacks[labelKey].push(packId);
+          }
+        }
+        if (!sound.src) return;
+        byPack[packId][sound.id] = true;
+        if (!bySound[sound.id]) bySound[sound.id] = {};
+        bySound[sound.id][packId] = true;
+      });
+    });
+
+    allPlayablePool().forEach(function (sound) {
+      if (bySound[sound.id]) return;
+      const labelKey = String(sound.label || "")
+        .trim()
+        .toLowerCase();
+      const packs = labelToPacks[labelKey] || [];
+      if (!packs.length) {
+        bySound[sound.id] = { more: true };
+        if (!byPack.more) byPack.more = {};
+        byPack.more[sound.id] = true;
+        return;
+      }
+      bySound[sound.id] = {};
+      packs.forEach(function (packId) {
+        bySound[sound.id][packId] = true;
+        if (!byPack[packId]) byPack[packId] = {};
+        byPack[packId][sound.id] = true;
+      });
+    });
+
+    return { bySound: bySound, byPack: byPack, packMeta: packMeta };
+  }
+
+  function getPickerCategories(index) {
+    const cats = [
+      { id: "all", label: "All", emoji: "🎛️" },
+      { id: "selected", label: "Selected", emoji: "✅" },
+    ];
+    const order = Object.keys(index.packMeta);
+    order.forEach(function (packId) {
+      const ids = index.byPack[packId];
+      if (!ids || !Object.keys(ids).length) return;
+      cats.push(index.packMeta[packId]);
+    });
+    if (index.byPack.more && Object.keys(index.byPack.more).length) {
+      cats.push({ id: "more", label: "More", emoji: "✨" });
+    }
+    return cats;
+  }
+
+  function filterPoolForPicker(pool, index) {
+    if (pickerCategory === "all") return pool;
+    if (pickerCategory === "selected") {
+      return pool.filter(function (sound) {
+        return pickerSelectedIds.indexOf(sound.id) !== -1;
+      });
+    }
+    return pool.filter(function (sound) {
+      const packs = index.bySound[sound.id];
+      return packs && packs[pickerCategory];
+    });
+  }
+
+  function buildPickerCats(index) {
+    const cats = getPickerCategories(index);
+    const valid = {};
+    cats.forEach(function (cat) {
+      valid[cat.id] = true;
+    });
+    if (!valid[pickerCategory]) pickerCategory = "all";
+
+    mixPickerCats.innerHTML = "";
+    cats.forEach(function (cat) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className =
+        "mix-picker-cat" + (cat.id === pickerCategory ? " is-active" : "");
+      btn.setAttribute("role", "tab");
+      btn.setAttribute("aria-selected", cat.id === pickerCategory ? "true" : "false");
+      btn.dataset.cat = cat.id;
+      btn.innerHTML =
+        '<span class="mix-picker-cat-emoji" aria-hidden="true">' +
+        cat.emoji +
+        "</span>" +
+        "<span>" +
+        cat.label +
+        "</span>";
+      btn.addEventListener("click", function () {
+        if (pickerCategory === cat.id) return;
+        pickerCategory = cat.id;
+        buildPickerCats(index);
+        buildPickerGrid(index);
+      });
+      mixPickerCats.appendChild(btn);
+    });
+  }
 
   function setAllPackActive() {
     activePack = "all";
@@ -2009,9 +2138,22 @@
     updatePickerCount();
   }
 
-  function buildPickerGrid() {
-    const pool = allPlayablePool();
+  function buildPickerGrid(index) {
+    const packIndex = index || buildPickerPackIndex();
+    const pool = filterPoolForPicker(allPlayablePool(), packIndex);
     mixPickerGrid.innerHTML = "";
+
+    if (!pool.length) {
+      const empty = document.createElement("p");
+      empty.className = "mix-picker-empty";
+      empty.textContent =
+        pickerCategory === "selected"
+          ? "No sounds selected yet"
+          : "No sounds in this category yet";
+      mixPickerGrid.appendChild(empty);
+      syncPickerSelectionUI();
+      return;
+    }
 
     pool.forEach(function (sound) {
       const btn = document.createElement("button");
@@ -2045,6 +2187,9 @@
           pickerSelectedIds.push(sound.id);
         }
         syncPickerSelectionUI();
+        if (pickerCategory === "selected") {
+          buildPickerGrid(packIndex);
+        }
       });
 
       mixPickerGrid.appendChild(btn);
@@ -2058,7 +2203,10 @@
     pickerSelectedIds = current.map(function (s) {
       return s.id;
     });
-    buildPickerGrid();
+    pickerCategory = "all";
+    const index = buildPickerPackIndex();
+    buildPickerCats(index);
+    buildPickerGrid(index);
     mixPicker.hidden = false;
     mixPickerBackdrop.hidden = false;
     requestAnimationFrame(function () {
@@ -2122,7 +2270,11 @@
 
   mixPickerClear.addEventListener("click", function () {
     pickerSelectedIds = [];
-    syncPickerSelectionUI();
+    if (pickerCategory === "selected") {
+      buildPickerGrid();
+    } else {
+      syncPickerSelectionUI();
+    }
   });
 
   mixPickerDefaults.addEventListener("click", function () {
