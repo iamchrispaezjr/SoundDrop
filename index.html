@@ -404,6 +404,7 @@
       </section>
 
       <section class="keypad" id="keypad" aria-label="Sound effects"></section>
+      <p class="keypad-hint" id="keypadHint" hidden>Drag buttons to rearrange</p>
 
       <footer class="utility-bar">
         <button class="utility-btn" id="volumeBtn" type="button" aria-label="Toggle volume" aria-pressed="true">
@@ -501,7 +502,7 @@
     <header class="mix-picker-header">
       <div>
         <h2 class="mix-picker-title" id="mixPickerTitle">Build Your Remote</h2>
-        <p class="mix-picker-note">Upload up to 50 sounds (3MB each), sort into packs, and pick 17 for your remote</p>
+        <p class="mix-picker-note">Upload up to 50 sounds (3MB each), set emoji/photo, and pick 17 for your remote</p>
       </div>
       <button class="mix-picker-close" id="mixPickerClose" type="button" aria-label="Close customize panel">
         <span aria-hidden="true">&times;</span>
@@ -514,7 +515,7 @@
     </div>
 
     <p class="mix-picker-local-note" id="mixPickerLocalNote">
-      Limit: 50 sounds · 3MB each · stays on this device only
+      Limit: 50 sounds · 3MB each · stays on this device
     </p>
 
     <div
@@ -525,6 +526,45 @@
     ></div>
 
     <div class="mix-picker-grid" id="mixPickerGrid" role="group" aria-label="Available sounds"></div>
+
+    <div class="mix-emoji-picker" id="mixEmojiPicker" hidden>
+      <div class="mix-emoji-picker-head">
+        <p class="mix-emoji-picker-title" id="mixEmojiPickerTitle">Button look</p>
+        <button class="mix-emoji-picker-close" id="mixEmojiPickerClose" type="button" aria-label="Close look picker">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="mix-emoji-picker-body">
+        <div class="mix-emoji-preview" id="mixEmojiPreview" aria-hidden="true">🎵</div>
+        <label class="mix-emoji-field">
+          <span class="mix-emoji-field-label">Paste or type your own emoji</span>
+          <input
+            class="mix-emoji-input"
+            id="mixEmojiInput"
+            type="text"
+            maxlength="16"
+            enterkeyhint="done"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Your emoji"
+            placeholder="😀"
+          >
+        </label>
+        <button class="mix-emoji-apply" id="mixEmojiApply" type="button">Use emoji</button>
+        <p class="mix-emoji-hint">Emoji is recommended — it stays tiny under the 50-sound / 3MB limits</p>
+        <div class="mix-emoji-photo-row">
+          <button class="mix-emoji-photo-btn" id="mixEmojiPhotoBtn" type="button">Optional: tiny photo</button>
+          <input
+            class="mix-picker-file-input"
+            id="mixEmojiPhotoInput"
+            type="file"
+            accept="image/*"
+            hidden
+          >
+        </div>
+        <p class="mix-emoji-photo-note">Photos are auto-shrunk (~96px). Prefer emoji when you can.</p>
+      </div>
+    </div>
 
     <footer class="mix-picker-actions">
       <button class="mix-picker-btn mix-picker-btn--ghost" id="mixPickerDefaults" type="button">

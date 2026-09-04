@@ -130,11 +130,17 @@
   const MIX_SESSION_KEY = "noisegoblin-session-mix";
   const HOME_SESSION_KEY = "noisegoblin-home-mix";
   const PLAY_COUNTS_KEY = "noisegoblin-play-counts";
+  const PACK_ORDER_KEY = "noisegoblin-pack-orders";
   const TRENDING_MIN_PLAYS = 50;
   const CUSTOM_DB_NAME = "noisegoblin-custom-sfx";
   const CUSTOM_STORE = "sounds";
   const CUSTOM_MAX_COUNT = 50;
   const CUSTOM_MAX_BYTES = 3 * 1024 * 1024;
+  const CUSTOM_ICON_MAX_BYTES = 250 * 1024;
+  const CUSTOM_ICON_SIZE = 96;
+  const CUSTOM_EMOJIS = [
+    "🎵", "🔊", "😂", "🔥", "👻", "🐶", "🚀", "🎮", "💩", "👏",
+  ];
 
   let customSoundsCache = [];
 
@@ -149,6 +155,8 @@
       custom: !!sound.custom,
       category: sound.category || "",
       uploadSlot: !!sound.uploadSlot,
+      plays: sound.plays,
+      showPlays: sound.showPlays,
     };
   }
 
@@ -157,11 +165,12 @@
       id: sound.id,
       emoji: sound.emoji,
       label: sound.label,
-      icon: sound.icon,
       placeholder: sound.placeholder,
       custom: !!sound.custom,
       category: sound.category || "",
     };
+    // Don't stash photo data URLs in sessionStorage — reload from IndexedDB
+    if (!sound.custom && sound.icon) copy.icon = sound.icon;
     if (!sound.custom) copy.src = sound.src;
     return copy;
   }
@@ -223,6 +232,7 @@
       emoji: record.emoji || "🎵",
       label: record.label || "Custom",
       src: url,
+      icon: record.icon || "",
       custom: true,
       category: record.category || "",
       _objectUrl: url,
@@ -295,6 +305,7 @@
       id: sound.id,
       label: sound.label,
       emoji: sound.emoji || "🎵",
+      icon: sound.icon || "",
       mime: sound._mime || "audio/mpeg",
       blob: sound._blob,
       createdAt: sound._createdAt || Date.now(),
@@ -309,6 +320,138 @@
     return persistCustomSound(sound).then(function () {
       return sound;
     });
+  }
+
+  function firstGrapheme(value) {
+    const text = String(value || "").trim();
+    if (!text) return "";
+    try {
+      if (typeof Intl !== "undefined" && Intl.Segmenter) {
+        const seg = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+        const first = seg.segment(text)[Symbol.iterator]().next().value;
+        return first && first.segment ? first.segment : text.slice(0, 2);
+      }
+    } catch (err) {
+      /* fall through */
+    }
+    const chars = Array.from(text);
+    return chars[0] || "";
+  }
+
+  function setCustomSoundEmoji(id, emoji) {
+    const sound = findCustomSound(id);
+    const picked = firstGrapheme(emoji);
+    if (!sound || !picked) return Promise.resolve(null);
+    sound.emoji = picked;
+    sound.icon = "";
+    return persistCustomSound(sound).then(function () {
+      refreshStoredCustomCopies(id);
+      return sound;
+    });
+  }
+
+  function setCustomSoundIcon(id, dataUrl) {
+    const sound = findCustomSound(id);
+    if (!sound || !dataUrl) return Promise.resolve(null);
+    sound.icon = dataUrl;
+    if (!sound.emoji) sound.emoji = "🎵";
+    return persistCustomSound(sound).then(function () {
+      refreshStoredCustomCopies(id);
+      return sound;
+    });
+  }
+
+  function shrinkImageFile(file) {
+    return new Promise(function (resolve, reject) {
+      if (!file || !file.type || file.type.indexOf("image/") !== 0) {
+        reject(new Error("Not an image"));
+        return;
+      }
+      if (file.size > CUSTOM_ICON_MAX_BYTES) {
+        reject(new Error("Photo too large"));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onerror = function () {
+        reject(new Error("Read failed"));
+      };
+      reader.onload = function () {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement("canvas");
+          const scale = Math.min(
+            1,
+            CUSTOM_ICON_SIZE / Math.max(img.width || 1, img.height || 1)
+          );
+          const w = Math.max(1, Math.round((img.width || 1) * scale));
+          const h = Math.max(1, Math.round((img.height || 1) * scale));
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Canvas unavailable"));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, w, h);
+          try {
+            resolve(canvas.toDataURL("image/jpeg", 0.72));
+          } catch (err) {
+            reject(err);
+          }
+        };
+        img.onerror = function () {
+          reject(new Error("Image failed"));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function refreshStoredCustomCopies(id) {
+    const live = findCustomSound(id);
+    if (!live) return;
+
+    function patchList(list) {
+      if (!list || !list.length) return list;
+      return list.map(function (item) {
+        if (item && item.id === id) return cloneSound(live);
+        return item;
+      });
+    }
+
+    if (customHomeSounds) {
+      customHomeSounds = patchList(customHomeSounds);
+      try {
+        sessionStorage.setItem(
+          HOME_SESSION_KEY,
+          JSON.stringify(customHomeSounds.map(serializeSound))
+        );
+      } catch (err) {
+        /* ignore */
+      }
+    }
+    if (sessionMix) {
+      sessionMix = patchList(sessionMix);
+      try {
+        sessionStorage.setItem(
+          MIX_SESSION_KEY,
+          JSON.stringify(
+            sessionMix
+              .filter(function (s) {
+                return s && s.src && !s.placeholder;
+              })
+              .map(serializeSound)
+          )
+        );
+      } catch (err) {
+        /* ignore */
+      }
+    }
+  }
+
+  function randomCustomEmoji() {
+    return CUSTOM_EMOJIS[Math.floor(Math.random() * CUSTOM_EMOJIS.length)] || "🎵";
   }
 
   function deleteCustomSoundRecord(id) {
@@ -465,6 +608,46 @@
   }
 
   let customHomeSounds = null;
+  let packOrderOverrides = loadPackOrders();
+
+  function loadPackOrders() {
+    try {
+      const raw = sessionStorage.getItem(PACK_ORDER_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (err) {
+      return {};
+    }
+  }
+
+  function savePackOrders() {
+    try {
+      sessionStorage.setItem(PACK_ORDER_KEY, JSON.stringify(packOrderOverrides));
+    } catch (err) {
+      /* ignore */
+    }
+  }
+
+  function applyPackOrder(packId, list) {
+    const order = packOrderOverrides[packId];
+    if (!order || !order.length || !list || !list.length) return list || [];
+    const byId = {};
+    list.forEach(function (sound) {
+      if (sound && sound.id) byId[sound.id] = sound;
+    });
+    const ordered = [];
+    order.forEach(function (id) {
+      if (byId[id]) {
+        ordered.push(byId[id]);
+        delete byId[id];
+      }
+    });
+    Object.keys(byId).forEach(function (id) {
+      ordered.push(byId[id]);
+    });
+    return ordered;
+  }
 
   function getHomeSounds() {
     if (customHomeSounds && customHomeSounds.length) {
@@ -574,7 +757,16 @@
   const mixPickerSurprise = document.getElementById("mixPickerSurprise");
   const mixPickerSave = document.getElementById("mixPickerSave");
   const mixPickerCats = document.getElementById("mixPickerCats");
+  const mixEmojiPicker = document.getElementById("mixEmojiPicker");
+  const mixEmojiPickerClose = document.getElementById("mixEmojiPickerClose");
+  const mixEmojiPickerTitle = document.getElementById("mixEmojiPickerTitle");
+  const mixEmojiPreview = document.getElementById("mixEmojiPreview");
+  const mixEmojiInput = document.getElementById("mixEmojiInput");
+  const mixEmojiApply = document.getElementById("mixEmojiApply");
+  const mixEmojiPhotoBtn = document.getElementById("mixEmojiPhotoBtn");
+  const mixEmojiPhotoInput = document.getElementById("mixEmojiPhotoInput");
   const mineFileInput = document.getElementById("mineFileInput");
+  let emojiPickerSoundId = null;
   const packBookmark = document.getElementById("packBookmark");
   const packTab = document.getElementById("packTab");
   const packsHeaderBtn = document.getElementById("packsHeaderBtn");
@@ -1170,16 +1362,22 @@
     if (packId === "mix") {
       return getSessionMix();
     }
+
+    let list;
     if (packId === "trending") {
-      return getTrendingSounds();
+      list = getTrendingSounds();
+    } else if (packId === "mine") {
+      list = realBoard(customSoundsCache.slice(0, PACK_SIZE));
+    } else if (isOrganizerPack(packId)) {
+      list = realBoard(customsInCategory(packId).slice(0, PACK_SIZE));
+    } else {
+      list = getHomeSounds();
     }
-    if (packId === "mine") {
-      return realBoard(customSoundsCache.slice(0, PACK_SIZE));
-    }
-    if (isOrganizerPack(packId)) {
-      return realBoard(customsInCategory(packId).slice(0, PACK_SIZE));
-    }
-    return getHomeSounds();
+
+    const playable = (list || []).filter(function (s) {
+      return s && s.src && !s.placeholder;
+    });
+    return realBoard(applyPackOrder(packId, playable));
   }
 
   function buildKeypad(packId) {
@@ -1188,6 +1386,7 @@
       return s && s.src && !s.placeholder;
     });
     keypadEl.innerHTML = "";
+    updateKeypadHint(pack, list.length);
 
     if (!list.length) {
       const empty = document.createElement("div");
@@ -1222,14 +1421,19 @@
       return;
     }
 
+    const canReorder = pack !== "mix";
+
     list.forEach(function (sound, index) {
       const isCenter = list.length === PACK_SIZE && index === PACK_SIZE - 1;
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className =
-        "sound-btn" + (isCenter ? " sound-btn--center" : "");
+        "sound-btn" +
+        (isCenter ? " sound-btn--center" : "") +
+        (canReorder ? " sound-btn--draggable" : "");
       btn.setAttribute("aria-label", "Play " + sound.label);
       btn.dataset.id = sound.id;
+      btn.dataset.index = String(index);
 
       const iconHtml = sound.icon
         ? '<img class="sound-btn-emoji-img" src="' +
@@ -1248,11 +1452,180 @@
           ? '<span class="sound-btn-count">' + (sound.plays || 0) + "</span>"
           : "");
 
+      let suppressClick = false;
       btn.addEventListener("click", function () {
+        if (suppressClick) {
+          suppressClick = false;
+          return;
+        }
         onSoundClick(sound, btn);
       });
 
+      if (canReorder) {
+        bindKeypadDrag(btn, sound, list, pack, function () {
+          suppressClick = true;
+        });
+      }
+
       keypadEl.appendChild(btn);
+    });
+  }
+
+  const keypadHint = document.getElementById("keypadHint");
+
+  function updateKeypadHint(pack, count) {
+    if (!keypadHint) return;
+    const show = pack !== "mix" && count > 1;
+    keypadHint.hidden = !show;
+  }
+
+  let keypadDrag = null;
+
+  function clearKeypadDropHints() {
+    keypadEl.querySelectorAll(".sound-btn.is-drop-target").forEach(function (el) {
+      el.classList.remove("is-drop-target");
+    });
+  }
+
+  function endKeypadDrag() {
+    if (!keypadDrag) return;
+    const state = keypadDrag;
+    keypadDrag = null;
+    clearKeypadDropHints();
+    if (state.ghost && state.ghost.parentNode) {
+      state.ghost.parentNode.removeChild(state.ghost);
+    }
+    if (state.btn) state.btn.classList.remove("is-dragging");
+    document.body.classList.remove("is-keypad-dragging");
+  }
+
+  function elementFromPointKeypad(x, y) {
+    const ghost = keypadDrag && keypadDrag.ghost;
+    if (ghost) ghost.style.visibility = "hidden";
+    const el = document.elementFromPoint(x, y);
+    if (ghost) ghost.style.visibility = "visible";
+    return el;
+  }
+
+  function persistKeypadOrder(pack, ordered) {
+    if (pack === "mix") return;
+    if (pack === "all") {
+      saveHomeMix(ordered);
+      return;
+    }
+    packOrderOverrides[pack] = ordered.map(function (sound) {
+      return sound.id;
+    });
+    savePackOrders();
+  }
+
+  function snapKeypadReorder(pack, fromId, toId) {
+    const current = soundsForPack(pack)
+      .filter(function (s) {
+        return s && s.src && !s.placeholder;
+      })
+      .map(cloneSound);
+    const from = current.findIndex(function (s) {
+      return s.id === fromId;
+    });
+    const to = current.findIndex(function (s) {
+      return s.id === toId;
+    });
+    if (from < 0 || to < 0 || from === to) return false;
+    const moved = current.splice(from, 1)[0];
+    current.splice(to, 0, moved);
+    persistKeypadOrder(pack, current);
+    buildKeypad(pack);
+    keypadEl.querySelectorAll(".sound-btn").forEach(function (btn) {
+      btn.classList.add("is-snapping");
+    });
+    window.setTimeout(function () {
+      keypadEl.querySelectorAll(".sound-btn.is-snapping").forEach(function (btn) {
+        btn.classList.remove("is-snapping");
+      });
+    }, 220);
+    return true;
+  }
+
+  function bindKeypadDrag(btn, sound, list, pack, onDragged) {
+    function onPointerMove(e) {
+      if (!keypadDrag || keypadDrag.id !== sound.id) return;
+      if (keypadDrag.pointerId != null && e.pointerId !== keypadDrag.pointerId) return;
+      e.preventDefault();
+      const dx = e.clientX - keypadDrag.startX;
+      const dy = e.clientY - keypadDrag.startY;
+      if (!keypadDrag.moved && dx * dx + dy * dy > 36) {
+        keypadDrag.moved = true;
+        const rect = btn.getBoundingClientRect();
+        const ghost = btn.cloneNode(true);
+        ghost.classList.add("sound-btn-ghost");
+        ghost.style.width = rect.width + "px";
+        ghost.style.height = rect.height + "px";
+        ghost.style.left = e.clientX - keypadDrag.offsetX + "px";
+        ghost.style.top = e.clientY - keypadDrag.offsetY + "px";
+        document.body.appendChild(ghost);
+        keypadDrag.ghost = ghost;
+        btn.classList.add("is-dragging");
+        document.body.classList.add("is-keypad-dragging");
+      }
+      if (!keypadDrag.moved) return;
+      if (keypadDrag.ghost) {
+        keypadDrag.ghost.style.left = e.clientX - keypadDrag.offsetX + "px";
+        keypadDrag.ghost.style.top = e.clientY - keypadDrag.offsetY + "px";
+      }
+      clearKeypadDropHints();
+      const under = elementFromPointKeypad(e.clientX, e.clientY);
+      const overBtn = under && under.closest ? under.closest(".sound-btn") : null;
+      if (overBtn && overBtn !== btn && overBtn.dataset.id) {
+        overBtn.classList.add("is-drop-target");
+      }
+    }
+
+    function onPointerUp(e) {
+      if (!keypadDrag || keypadDrag.id !== sound.id) return;
+      if (keypadDrag.pointerId != null && e.pointerId !== keypadDrag.pointerId) return;
+      const didMove = keypadDrag.moved;
+      const under = elementFromPointKeypad(e.clientX, e.clientY);
+      const overBtn = under && under.closest ? under.closest(".sound-btn") : null;
+      const toId = overBtn && overBtn !== btn ? overBtn.dataset.id : null;
+      document.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointerup", onPointerUp);
+      document.removeEventListener("pointercancel", onPointerCancel);
+      endKeypadDrag();
+      if (!didMove) return;
+      if (onDragged) onDragged();
+      if (toId) {
+        snapKeypadReorder(pack, sound.id, toId);
+      }
+    }
+
+    function onPointerCancel() {
+      document.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointerup", onPointerUp);
+      document.removeEventListener("pointercancel", onPointerCancel);
+      endKeypadDrag();
+    }
+
+    btn.addEventListener("pointerdown", function (e) {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      if (keypadDrag) return;
+
+      const rect = btn.getBoundingClientRect();
+      keypadDrag = {
+        id: sound.id,
+        btn: btn,
+        ghost: null,
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        offsetX: e.clientX - rect.left,
+        offsetY: e.clientY - rect.top,
+        moved: false,
+      };
+
+      document.addEventListener("pointermove", onPointerMove, { passive: false });
+      document.addEventListener("pointerup", onPointerUp);
+      document.addEventListener("pointercancel", onPointerCancel);
     });
   }
 
@@ -1778,9 +2151,15 @@
   function filterPoolForPicker(pool, index) {
     if (pickerCategory === "all") return pool;
     if (pickerCategory === "selected") {
-      return pool.filter(function (sound) {
-        return pickerSelectedIds.indexOf(sound.id) !== -1;
+      const byId = {};
+      pool.forEach(function (sound) {
+        byId[sound.id] = sound;
       });
+      return pickerSelectedIds
+        .map(function (id) {
+          return byId[id];
+        })
+        .filter(Boolean);
     }
     if (pickerCategory === "mine") {
       return pool.filter(function (sound) {
@@ -1875,6 +2254,12 @@
     updatePickerCount();
   }
 
+  function confirmRemoveSound(sound) {
+    const ok = window.confirm("Remove \"" + sound.label + "\" from this device?");
+    if (!ok) return;
+    removeCustomSound(sound.id);
+  }
+
   function buildPickerGrid(index) {
     const packIndex = index || buildPickerPackIndex();
     const pool = filterPoolForPicker(allPlayablePool(), packIndex);
@@ -1896,10 +2281,11 @@
     }
 
     pool.forEach(function (sound) {
-      const btn = document.createElement("button");
-      btn.type = "button";
+      const btn = document.createElement("div");
       btn.className = "mix-pick";
       btn.dataset.id = sound.id;
+      btn.setAttribute("role", "button");
+      btn.setAttribute("tabindex", "0");
       btn.setAttribute("aria-pressed", "false");
 
       const iconHtml = sound.icon
@@ -1908,16 +2294,34 @@
           '" alt="">'
         : sound.emoji;
 
-      btn.innerHTML =
-        (sound.custom ? '<span class="mix-pick-badge">Local</span>' : "") +
-        '<span class="mix-pick-emoji" aria-hidden="true">' +
-        iconHtml +
-        "</span>" +
-        '<span class="mix-pick-label">' +
-        sound.label +
-        "</span>";
-
       if (sound.custom) {
+        const emojiBtn = document.createElement("span");
+        emojiBtn.className = "mix-pick-emoji-btn";
+        emojiBtn.setAttribute("role", "button");
+        emojiBtn.setAttribute("tabindex", "0");
+        emojiBtn.setAttribute("aria-label", "Change emoji for " + sound.label);
+        emojiBtn.innerHTML =
+          '<span class="mix-pick-emoji" aria-hidden="true">' +
+          iconHtml +
+          "</span>";
+        emojiBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          openEmojiPicker(sound);
+        });
+        emojiBtn.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            e.stopPropagation();
+            openEmojiPicker(sound);
+          }
+        });
+        btn.appendChild(emojiBtn);
+
+        const labelEl = document.createElement("span");
+        labelEl.className = "mix-pick-label";
+        labelEl.textContent = sound.label;
+        btn.appendChild(labelEl);
+
         const catSelect = document.createElement("select");
         catSelect.className = "mix-pick-cat";
         catSelect.setAttribute("aria-label", "Category for " + sound.label);
@@ -1958,27 +2362,28 @@
         });
         btn.appendChild(catSelect);
 
-        const del = document.createElement("span");
+        const del = document.createElement("button");
+        del.type = "button";
         del.className = "mix-pick-delete";
-        del.setAttribute("role", "button");
-        del.setAttribute("tabindex", "0");
         del.setAttribute("aria-label", "Remove " + sound.label);
-        del.textContent = "×";
+        del.textContent = "Remove";
         del.addEventListener("click", function (e) {
           e.stopPropagation();
-          removeCustomSound(sound.id);
-        });
-        del.addEventListener("keydown", function (e) {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            e.stopPropagation();
-            removeCustomSound(sound.id);
-          }
+          confirmRemoveSound(sound);
         });
         btn.appendChild(del);
+
+      } else {
+        btn.innerHTML =
+          '<span class="mix-pick-emoji" aria-hidden="true">' +
+          iconHtml +
+          "</span>" +
+          '<span class="mix-pick-label">' +
+          sound.label +
+          "</span>";
       }
 
-      btn.addEventListener("click", function () {
+      function toggleSelect() {
         const idx = pickerSelectedIds.indexOf(sound.id);
         if (idx !== -1) {
           pickerSelectedIds.splice(idx, 1);
@@ -1992,12 +2397,91 @@
         if (pickerCategory === "selected") {
           buildPickerGrid(packIndex);
         }
+      }
+
+      btn.addEventListener("click", function (e) {
+        if (
+          e.target.closest(
+            ".mix-pick-delete, .mix-pick-cat, .mix-pick-emoji-btn"
+          )
+        ) {
+          return;
+        }
+        toggleSelect();
+      });
+      btn.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleSelect();
+        }
       });
 
       mixPickerGrid.appendChild(btn);
     });
 
     syncPickerSelectionUI();
+  }
+
+  function updateEmojiPreview(sound) {
+    if (!mixEmojiPreview || !sound) return;
+    if (sound.icon) {
+      mixEmojiPreview.innerHTML =
+        '<img class="mix-emoji-preview-img" src="' +
+        String(sound.icon).replace(/"/g, "") +
+        '" alt="">';
+    } else {
+      mixEmojiPreview.textContent = sound.emoji || "🎵";
+    }
+  }
+
+  function applyEmojiFromInput() {
+    const sound = findCustomSound(emojiPickerSoundId);
+    if (!sound || !mixEmojiInput) return;
+    const picked = firstGrapheme(mixEmojiInput.value);
+    if (!picked) {
+      showToast("Paste or type an emoji first");
+      mixEmojiInput.focus();
+      return;
+    }
+    setCustomSoundEmoji(sound.id, picked)
+      .then(function () {
+        showToast(sound.label + " → " + picked);
+        closeEmojiPicker();
+        refreshPickerAfterCustomChange();
+        buildKeypad(activePack);
+        animateDisplay(picked, sound.label);
+      })
+      .catch(function () {
+        showToast("Couldn't update emoji");
+      });
+  }
+
+  function closeEmojiPicker() {
+    emojiPickerSoundId = null;
+    if (!mixEmojiPicker) return;
+    mixEmojiPicker.hidden = true;
+    mixEmojiPicker.classList.remove("is-open");
+    if (mixEmojiInput) mixEmojiInput.value = "";
+  }
+
+  function openEmojiPicker(sound) {
+    if (!mixEmojiPicker || !sound) return;
+    emojiPickerSoundId = sound.id;
+    if (mixEmojiPickerTitle) {
+      mixEmojiPickerTitle.textContent = "Look for " + sound.label;
+    }
+    updateEmojiPreview(sound);
+    if (mixEmojiInput) {
+      mixEmojiInput.value = sound.icon ? "" : sound.emoji || "";
+    }
+    mixEmojiPicker.hidden = false;
+    requestAnimationFrame(function () {
+      mixEmojiPicker.classList.add("is-open");
+      if (mixEmojiInput) {
+        mixEmojiInput.focus();
+        mixEmojiInput.select();
+      }
+    });
   }
 
   function openMixPicker(startCategory) {
@@ -2019,6 +2503,7 @@
   }
 
   function closeMixPicker() {
+    closeEmojiPicker();
     mixPicker.classList.remove("is-open");
     mixPickerBackdrop.classList.remove("is-open");
     customizeBtn.setAttribute("aria-expanded", "false");
@@ -2075,6 +2560,75 @@
 
   mixPickerClose.addEventListener("click", closeMixPicker);
   mixPickerBackdrop.addEventListener("click", closeMixPicker);
+  if (mixEmojiPickerClose) {
+    mixEmojiPickerClose.addEventListener("click", function (e) {
+      e.stopPropagation();
+      closeEmojiPicker();
+    });
+  }
+  if (mixEmojiPicker) {
+    mixEmojiPicker.addEventListener("click", function (e) {
+      e.stopPropagation();
+    });
+  }
+  if (mixEmojiApply) {
+    mixEmojiApply.addEventListener("click", function (e) {
+      e.stopPropagation();
+      applyEmojiFromInput();
+    });
+  }
+  if (mixEmojiInput) {
+    mixEmojiInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        e.stopPropagation();
+        applyEmojiFromInput();
+      }
+    });
+    mixEmojiInput.addEventListener("input", function () {
+      const sound = findCustomSound(emojiPickerSoundId);
+      const picked = firstGrapheme(mixEmojiInput.value);
+      if (mixEmojiPreview) {
+        if (picked) {
+          mixEmojiPreview.textContent = picked;
+        } else if (sound) {
+          updateEmojiPreview(sound);
+        }
+      }
+    });
+  }
+  if (mixEmojiPhotoBtn && mixEmojiPhotoInput) {
+    mixEmojiPhotoBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      mixEmojiPhotoInput.click();
+    });
+    mixEmojiPhotoInput.addEventListener("change", function () {
+      const file = mixEmojiPhotoInput.files && mixEmojiPhotoInput.files[0];
+      mixEmojiPhotoInput.value = "";
+      const sound = findCustomSound(emojiPickerSoundId);
+      if (!file || !sound) return;
+      shrinkImageFile(file)
+        .then(function (dataUrl) {
+          return setCustomSoundIcon(sound.id, dataUrl).then(function () {
+            return dataUrl;
+          });
+        })
+        .then(function (dataUrl) {
+          showToast(sound.label + " photo set");
+          closeEmojiPicker();
+          refreshPickerAfterCustomChange();
+          buildKeypad(activePack);
+          animateDisplay(sound.emoji || "🎵", sound.label, dataUrl);
+        })
+        .catch(function (err) {
+          if (err && err.message === "Photo too large") {
+            showToast("Photo must be under 250KB — emoji is lighter");
+          } else {
+            showToast("Couldn't use that photo");
+          }
+        });
+    });
+  }
 
   mixPickerClear.addEventListener("click", function () {
     pickerSelectedIds = [];
@@ -2108,9 +2662,10 @@
         });
         syncHomeFromLibrary();
         sessionMix = null;
+        if (emojiPickerSoundId === id) closeEmojiPicker();
         refreshPickerAfterCustomChange();
         buildKeypad(activePack);
-        showToast("Removed local sound");
+        showToast("Removed sound");
       })
       .catch(function () {
         showToast("Couldn't remove that sound");
@@ -2123,7 +2678,7 @@
 
     let remaining = CUSTOM_MAX_COUNT - customSoundsCache.length;
     if (remaining <= 0) {
-      showToast("Max " + CUSTOM_MAX_COUNT + " local sounds");
+      showToast("Max " + CUSTOM_MAX_COUNT + " sounds");
       return;
     }
 
@@ -2139,7 +2694,7 @@
           showToast(
             "Added " +
               added +
-              " local sound" +
+              " sound" +
               (added === 1 ? "" : "s") +
               (isOrganizerPack(activePack) ? " to " + activePack : "")
           );
@@ -2165,7 +2720,7 @@
       const record = {
         id: "custom-" + Date.now() + "-" + Math.floor(Math.random() * 10000),
         label: labelFromFilename(file.name),
-        emoji: "🎵",
+        emoji: randomCustomEmoji(),
         mime: file.type || "audio/mpeg",
         blob: file,
         createdAt: Date.now(),
