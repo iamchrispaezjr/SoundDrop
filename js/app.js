@@ -205,27 +205,8 @@
 
   // 17 packs × 17 named slots (names only for empty slots)
   const PACK_SOUNDS = {
-    trending: [
-      ph("tr-1", "🔥", "Viral"),
-      ph("tr-2", "📈", "Hot Take"),
-      ph("tr-3", "💥", "Boom"),
-      ph("tr-4", "⚡", "Zap"),
-      ph("tr-5", "🗣️", "Talking"),
-      ph("tr-6", "📣", "Shoutout"),
-      ph("tr-7", "🎧", "Drop"),
-      ph("tr-8", "🌀", "Spin"),
-      ph("tr-9", "⭐", "Star"),
-      ph("tr-10", "📌", "Pinned"),
-      ph("tr-11", "🚀", "Boost"),
-      ph("tr-12", "🎯", "Hit"),
-      ph("tr-13", "💬", "Reply"),
-      ph("tr-14", "🔁", "Repost"),
-      ph("tr-15", "❤️", "Liked"),
-      ph("tr-16", "🕒", "Just In"),
-      ph("tr-17", "🏆", "Top"),
-    ],
     laughs: [
-      ph("la-1", "😂", "Laugh"),
+      soundById("laugh"),
       ph("la-2", "😄", "Chuckle"),
       ph("la-3", "🤭", "Giggle"),
       ph("la-4", "😈", "Evil Laugh"),
@@ -244,14 +225,14 @@
       ph("la-17", "🤪", "Manic Laugh"),
     ],
     memes: [
+      soundById("sus"),
+      soundById("fuck"),
       ph("me-1", "😐", "Bruh"),
       ph("me-2", "💀", "Oof"),
       ph("me-3", "💥", "Vine Boom"),
       ph("me-4", "😢", "Emotional"),
       ph("me-5", "🥶", "Sheesh"),
       ph("me-6", "💻", "Windows XP"),
-      ph("me-7", "👁️", "Sus"),
-      ph("me-8", "🚨", "Emergency"),
       ph("me-9", "🗿", "Stone Face"),
       ph("me-10", "📢", "Announcement"),
       ph("me-11", "🧃", "Juice"),
@@ -260,11 +241,11 @@
       ph("me-14", "📱", "Notification"),
       ph("me-15", "🦴", "Bone Crack"),
       ph("me-16", "🎬", "Cut"),
-      ph("me-17", "🫠", "Meltdown"),
+      soundById("imalive"),
     ],
     reactions: [
-      ph("re-1", "👏", "Applause"),
-      ph("re-2", "👎", "Boo"),
+      soundById("applause"),
+      soundById("boo"),
       ph("re-3", "😮", "Wow"),
       ph("re-4", "😲", "Gasp"),
       ph("re-5", "🥹", "Aww"),
@@ -281,11 +262,11 @@
       ph("re-16", "🫡", "Salute"),
       ph("re-17", "💔", "Heartbreak"),
     ],
-    bits: [
-      ph("bi-1", "🥁", "Rimshot"),
-      ph("bi-2", "📀", "Scratch"),
+    funny: [
+      soundById("poo"),
+      soundById("iturnnow"),
       ph("bi-3", "💰", "Cash"),
-      ph("bi-4", "📣", "Airhorn"),
+      ph("bi-4", "🤡", "Pranks"),
       ph("bi-5", "❌", "Fail"),
       ph("bi-6", "🏆", "Victory"),
       ph("bi-7", "🥁", "Ba Dum Tss"),
@@ -339,8 +320,8 @@
       ph("an-17", "🐒", "Chatter"),
     ],
     party: [
+      soundById("airhorn"),
       ph("pa-1", "👏", "Applause"),
-      ph("pa-2", "📣", "Airhorn"),
       ph("pa-3", "💰", "Cash"),
       ph("pa-4", "🍾", "Pop"),
       ph("pa-5", "🎊", "Confetti"),
@@ -511,7 +492,19 @@
     ],
   };
 
-  // Extra royalty-free clips for the session Mix pool
+  // Home sounds not yet assigned to a themed pack — used by Mix
+  const MIX_LEFTOVER_IDS = [
+    "drumroll",
+    "scratch",
+    "cash",
+    "error",
+    "success",
+    "cheer",
+    "emergency",
+    "scream",
+  ];
+
+  // Extra royalty-free clips that fill out Mix when leftovers are under 17
   const EXTRA_SFX = [
     { id: "sfx-alien", emoji: "👽", label: "Alien", src: "sfx/alien.mp3" },
     { id: "sfx-bark", emoji: "🐶", label: "Bark", src: "sfx/bark.mp3" },
@@ -551,19 +544,12 @@
     { id: "sfx-whoosh", emoji: "💨", label: "Whoosh", src: "sfx/whoosh.mp3" },
   ];
 
-  const MIX_SIZE = 17;
+  const PACK_SIZE = 17;
   const MIX_SESSION_KEY = "noisegoblin-session-mix";
-
-  function shuffleList(items) {
-    const list = items.slice();
-    for (let i = list.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const tmp = list[i];
-      list[i] = list[j];
-      list[j] = tmp;
-    }
-    return list;
-  }
+  const HOME_SESSION_KEY = "noisegoblin-home-mix";
+  const PICKER_SEEN_KEY = "noisegoblin-picker-seen";
+  const PLAY_COUNTS_KEY = "noisegoblin-play-counts";
+  const TRENDING_MIN_PLAYS = 50;
 
   function cloneSound(sound) {
     return {
@@ -576,7 +562,26 @@
     };
   }
 
-  function playablePool() {
+  function withCenteredSeventeenth(list) {
+    return list.map(function (sound, index) {
+      const copy = cloneSound(sound);
+      copy.center = list.length === PACK_SIZE && index === PACK_SIZE - 1;
+      return copy;
+    });
+  }
+
+  function shuffleList(items) {
+    const list = items.slice();
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = list[i];
+      list[i] = list[j];
+      list[j] = tmp;
+    }
+    return list;
+  }
+
+  function mixPool() {
     const pool = [];
     const seen = {};
 
@@ -586,34 +591,30 @@
       pool.push(cloneSound(sound));
     }
 
-    SOUNDS.forEach(add);
+    MIX_LEFTOVER_IDS.forEach(function (id) {
+      add(soundById(id));
+    });
     EXTRA_SFX.forEach(add);
     return pool;
   }
 
-  function withCenteredSeventeenth(list) {
-    return list.map(function (sound, index) {
-      const copy = cloneSound(sound);
-      copy.center = list.length === MIX_SIZE && index === MIX_SIZE - 1;
-      return copy;
-    });
-  }
-
-  function buildSessionMix() {
-    try {
-      const raw = sessionStorage.getItem(MIX_SESSION_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw);
-        if (Array.isArray(saved) && saved.length === MIX_SIZE) {
-          return withCenteredSeventeenth(saved);
+  function buildSessionMix(forceNew) {
+    if (!forceNew) {
+      try {
+        const raw = sessionStorage.getItem(MIX_SESSION_KEY);
+        if (raw) {
+          const saved = JSON.parse(raw);
+          if (Array.isArray(saved) && saved.length === PACK_SIZE) {
+            return withCenteredSeventeenth(saved);
+          }
         }
+      } catch (err) {
+        /* ignore */
       }
-    } catch (err) {
-      /* ignore bad session data */
     }
 
-    const picked = shuffleList(playablePool()).slice(0, MIX_SIZE);
-    while (picked.length < MIX_SIZE) {
+    const picked = shuffleList(mixPool()).slice(0, PACK_SIZE);
+    while (picked.length < PACK_SIZE) {
       picked.push(cloneSound(SOUNDS[picked.length % SOUNDS.length]));
     }
 
@@ -630,12 +631,131 @@
 
   function getSessionMix() {
     if (!sessionMix) {
-      sessionMix = buildSessionMix();
+      sessionMix = buildSessionMix(false);
     }
     return sessionMix;
   }
 
-  let activePack = "mix";
+  function rerollSessionMix() {
+    sessionMix = buildSessionMix(true);
+    return sessionMix;
+  }
+
+  function allPlayablePool() {
+    const pool = [];
+    const seen = {};
+
+    function add(sound) {
+      if (!sound || !sound.src || seen[sound.id]) return;
+      seen[sound.id] = true;
+      pool.push(cloneSound(sound));
+    }
+
+    SOUNDS.forEach(add);
+    EXTRA_SFX.forEach(add);
+    return pool;
+  }
+
+  function loadHomeMix() {
+    try {
+      const raw = sessionStorage.getItem(HOME_SESSION_KEY);
+      if (!raw) return null;
+      const saved = JSON.parse(raw);
+      if (!Array.isArray(saved) || !saved.length || saved.length > PACK_SIZE) return null;
+      return withCenteredSeventeenth(saved.map(cloneSound));
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function saveHomeMix(list) {
+    const cleaned = list.slice(0, PACK_SIZE).map(cloneSound);
+    try {
+      sessionStorage.setItem(HOME_SESSION_KEY, JSON.stringify(cleaned));
+    } catch (err) {
+      /* ignore */
+    }
+    customHomeSounds = withCenteredSeventeenth(cleaned);
+    return customHomeSounds;
+  }
+
+  function clearHomeMix() {
+    try {
+      sessionStorage.removeItem(HOME_SESSION_KEY);
+    } catch (err) {
+      /* ignore */
+    }
+    customHomeSounds = null;
+  }
+
+  let customHomeSounds = loadHomeMix();
+
+  function getHomeSounds() {
+    if (customHomeSounds && customHomeSounds.length) {
+      return customHomeSounds;
+    }
+    return withCenteredSeventeenth(SOUNDS);
+  }
+
+  function loadPlayCounts() {
+    try {
+      const raw = localStorage.getItem(PLAY_COUNTS_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (err) {
+      return {};
+    }
+  }
+
+  function recordPlay(soundId) {
+    const counts = loadPlayCounts();
+    counts[soundId] = (counts[soundId] || 0) + 1;
+    try {
+      localStorage.setItem(PLAY_COUNTS_KEY, JSON.stringify(counts));
+    } catch (err) {
+      /* ignore quota / private mode */
+    }
+    return counts[soundId];
+  }
+
+  function getTrendingSounds() {
+    const counts = loadPlayCounts();
+    const pool = allPlayablePool();
+
+    const hot = [];
+    const rest = [];
+
+    pool.forEach(function (sound) {
+      const plays = counts[sound.id] || 0;
+      const copy = cloneSound(sound);
+      copy.plays = plays;
+      copy.showPlays = plays > TRENDING_MIN_PLAYS;
+      if (plays > TRENDING_MIN_PLAYS) {
+        hot.push(copy);
+      } else {
+        rest.push(copy);
+      }
+    });
+
+    hot.sort(function (a, b) {
+      const diff = b.plays - a.plays;
+      if (diff !== 0) return diff;
+      return a.label.localeCompare(b.label);
+    });
+
+    // Keep a normal mix underneath until sounds clear the 50× gate
+    const filler = shuffleList(rest);
+    const ranked = hot.concat(filler).slice(0, PACK_SIZE);
+
+    while (ranked.length < PACK_SIZE) {
+      ranked.push(cloneSound(SOUNDS[ranked.length % SOUNDS.length]));
+    }
+
+    return withCenteredSeventeenth(ranked.slice(0, PACK_SIZE));
+  }
+
+  let activePack = "all";
 
   // ---------------------------------------------------------------------------
   // DOM references
@@ -670,6 +790,16 @@
   const volumeBtn = document.getElementById("volumeBtn");
   const volumeSlider = document.getElementById("volumeSlider");
   const stopBtn = document.getElementById("stopBtn");
+  const customizeBtn = document.getElementById("customizeBtn");
+  const mixPicker = document.getElementById("mixPicker");
+  const mixPickerBackdrop = document.getElementById("mixPickerBackdrop");
+  const mixPickerClose = document.getElementById("mixPickerClose");
+  const mixPickerGrid = document.getElementById("mixPickerGrid");
+  const mixPickerCount = document.getElementById("mixPickerCount");
+  const mixPickerClear = document.getElementById("mixPickerClear");
+  const mixPickerDefaults = document.getElementById("mixPickerDefaults");
+  const mixPickerSurprise = document.getElementById("mixPickerSurprise");
+  const mixPickerSave = document.getElementById("mixPickerSave");
   const packBookmark = document.getElementById("packBookmark");
   const packTab = document.getElementById("packTab");
   const packTray = document.getElementById("packTray");
@@ -1240,14 +1370,34 @@
       return;
     }
     playSound(sound);
+
+    const plays = recordPlay(sound.id);
+    sound.plays = plays;
+
+    // Counts are tracked everywhere; badges only show on Trending after the 50× gate
+    if (activePack === "trending" && plays > TRENDING_MIN_PLAYS) {
+      let countEl = btn.querySelector(".sound-btn-count");
+      if (!countEl) {
+        countEl = document.createElement("span");
+        countEl.className = "sound-btn-count";
+        btn.appendChild(countEl);
+      }
+      countEl.textContent = String(plays);
+    }
   }
 
   function soundsForPack(packId) {
-    if (!packId || packId === "mix" || packId === "all") {
+    if (!packId || packId === "all") {
+      return getHomeSounds();
+    }
+    if (packId === "mix") {
       return getSessionMix();
     }
+    if (packId === "trending") {
+      return getTrendingSounds();
+    }
     if (!PACK_SOUNDS[packId]) {
-      return getSessionMix();
+      return getHomeSounds();
     }
     return withCenteredSeventeenth(PACK_SOUNDS[packId].filter(Boolean));
   }
@@ -1257,7 +1407,7 @@
     keypadEl.innerHTML = "";
 
     list.forEach(function (sound, index) {
-      const isCenter = list.length === MIX_SIZE && index === MIX_SIZE - 1;
+      const isCenter = list.length === PACK_SIZE && index === PACK_SIZE - 1;
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className =
@@ -1276,13 +1426,19 @@
           '" alt="">'
         : sound.emoji;
 
+      const countHtml =
+        sound.showPlays && (sound.plays || 0) > TRENDING_MIN_PLAYS
+          ? '<span class="sound-btn-count">' + (sound.plays || 0) + "</span>"
+          : "";
+
       btn.innerHTML =
         '<span class="sound-btn-emoji" aria-hidden="true">' +
         iconHtml +
         "</span>" +
         '<span class="sound-btn-label">' +
         sound.label +
-        "</span>";
+        "</span>" +
+        countHtml;
 
       btn.addEventListener("click", function () {
         onSoundClick(sound, btn);
@@ -1603,10 +1759,11 @@
         other.classList.toggle("is-active", other === chip);
       });
 
-      activePack = chip.dataset.pack || "mix";
+      activePack = chip.dataset.pack || "all";
       buildKeypad(activePack);
+      updateUtilityActionBtn();
 
-      const label = activePack === "mix" ? "Mix" : chip.textContent.trim();
+      const label = activePack === "all" ? "All" : chip.textContent.trim();
       const emoji = chip.dataset.emoji || "📑";
       animateDisplay(emoji, label);
 
@@ -1615,7 +1772,11 @@
         return s.placeholder;
       }).length;
       if (activePack === "mix") {
-        showToast("Mix — fresh random set for this session");
+        showToast("Mix — tap Randomize for a new set");
+      } else if (activePack === "trending") {
+        showToast("Trending — counters unlock after 50 plays");
+      } else if (activePack === "all" && customHomeSounds) {
+        showToast("All — your custom home remote (" + count + ")");
       } else if (coming > 0) {
         showToast(label + " — " + count + " sounds (" + coming + " soon)");
       } else {
@@ -1775,6 +1936,218 @@
   } else {
     applyBackground(DEFAULT_BACKGROUND, true);
   }
+
+  // ---------------------------------------------------------------------------
+  // Customize home remote picker
+  // ---------------------------------------------------------------------------
+  let pickerSelectedIds = [];
+
+  function setAllPackActive() {
+    activePack = "all";
+    packTray.querySelectorAll(".pack-chip").forEach(function (chip) {
+      chip.classList.toggle("is-active", chip.dataset.pack === "all");
+    });
+    buildKeypad("all");
+    updateUtilityActionBtn();
+  }
+
+  function updateUtilityActionBtn() {
+    const icon = customizeBtn.querySelector(".utility-icon");
+    const label = customizeBtn.querySelector(".utility-label");
+    if (activePack === "mix") {
+      if (icon) icon.textContent = "🎲";
+      if (label) label.textContent = "Randomize";
+      customizeBtn.setAttribute("aria-label", "Randomize Mix sounds");
+      customizeBtn.setAttribute("aria-expanded", "false");
+      customizeBtn.removeAttribute("aria-controls");
+      if (mixPicker.classList.contains("is-open")) {
+        closeMixPicker();
+      }
+    } else {
+      if (icon) icon.textContent = "🎛️";
+      if (label) label.textContent = "Customize";
+      customizeBtn.setAttribute("aria-label", "Customize home remote");
+      customizeBtn.setAttribute("aria-controls", "mixPicker");
+    }
+  }
+
+  function updatePickerCount() {
+    mixPickerCount.textContent = pickerSelectedIds.length + " / " + PACK_SIZE;
+    mixPickerSave.disabled = pickerSelectedIds.length === 0;
+  }
+
+  function syncPickerSelectionUI() {
+    mixPickerGrid.querySelectorAll(".mix-pick").forEach(function (btn) {
+      const on = pickerSelectedIds.indexOf(btn.dataset.id) !== -1;
+      btn.classList.toggle("is-selected", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    updatePickerCount();
+  }
+
+  function buildPickerGrid() {
+    const pool = allPlayablePool();
+    mixPickerGrid.innerHTML = "";
+
+    pool.forEach(function (sound) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "mix-pick";
+      btn.dataset.id = sound.id;
+      btn.setAttribute("aria-pressed", "false");
+
+      const iconHtml = sound.icon
+        ? '<img class="mix-pick-emoji-img" src="' +
+          sound.icon.replace(/"/g, "") +
+          '" alt="">'
+        : sound.emoji;
+
+      btn.innerHTML =
+        '<span class="mix-pick-emoji" aria-hidden="true">' +
+        iconHtml +
+        "</span>" +
+        '<span class="mix-pick-label">' +
+        sound.label +
+        "</span>";
+
+      btn.addEventListener("click", function () {
+        const idx = pickerSelectedIds.indexOf(sound.id);
+        if (idx !== -1) {
+          pickerSelectedIds.splice(idx, 1);
+        } else if (pickerSelectedIds.length >= PACK_SIZE) {
+          showToast("Max " + PACK_SIZE + " sounds");
+          return;
+        } else {
+          pickerSelectedIds.push(sound.id);
+        }
+        syncPickerSelectionUI();
+      });
+
+      mixPickerGrid.appendChild(btn);
+    });
+
+    syncPickerSelectionUI();
+  }
+
+  function openMixPicker() {
+    const current = customHomeSounds || [];
+    pickerSelectedIds = current.map(function (s) {
+      return s.id;
+    });
+    buildPickerGrid();
+    mixPicker.hidden = false;
+    mixPickerBackdrop.hidden = false;
+    requestAnimationFrame(function () {
+      mixPicker.classList.add("is-open");
+      mixPickerBackdrop.classList.add("is-open");
+    });
+    customizeBtn.setAttribute("aria-expanded", "true");
+    try {
+      sessionStorage.setItem(PICKER_SEEN_KEY, "1");
+    } catch (err) {
+      /* ignore */
+    }
+  }
+
+  function closeMixPicker() {
+    mixPicker.classList.remove("is-open");
+    mixPickerBackdrop.classList.remove("is-open");
+    customizeBtn.setAttribute("aria-expanded", "false");
+    mixPicker.addEventListener(
+      "transitionend",
+      function onEnd() {
+        mixPicker.hidden = true;
+        mixPickerBackdrop.hidden = true;
+        mixPicker.removeEventListener("transitionend", onEnd);
+      },
+      { once: true }
+    );
+  }
+
+  function soundsFromSelectedIds(ids) {
+    const pool = allPlayablePool();
+    const byId = {};
+    pool.forEach(function (s) {
+      byId[s.id] = s;
+    });
+    return ids
+      .map(function (id) {
+        return byId[id];
+      })
+      .filter(Boolean);
+  }
+
+  customizeBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (activePack === "mix") {
+      rerollSessionMix();
+      buildKeypad("mix");
+      animateDisplay("🎲", "Mix");
+      showToast("Mix reshuffled");
+      return;
+    }
+    if (mixPicker.classList.contains("is-open")) {
+      closeMixPicker();
+    } else {
+      openMixPicker();
+    }
+  });
+
+  mixPickerClose.addEventListener("click", closeMixPicker);
+  mixPickerBackdrop.addEventListener("click", closeMixPicker);
+
+  mixPickerClear.addEventListener("click", function () {
+    pickerSelectedIds = [];
+    syncPickerSelectionUI();
+  });
+
+  mixPickerDefaults.addEventListener("click", function () {
+    clearHomeMix();
+    setAllPackActive();
+    closeMixPicker();
+    showToast("Home remote reset to All defaults");
+    animateDisplay("🎛️", "All");
+  });
+
+  mixPickerSurprise.addEventListener("click", function () {
+    const surprise = shuffleList(allPlayablePool()).slice(0, PACK_SIZE);
+    saveHomeMix(surprise);
+    setAllPackActive();
+    closeMixPicker();
+    showToast("Surprise remote ready for this session");
+    animateDisplay("🎲", "Custom Mix");
+  });
+
+  mixPickerSave.addEventListener("click", function () {
+    if (!pickerSelectedIds.length) return;
+    const picked = soundsFromSelectedIds(pickerSelectedIds);
+    if (!picked.length) return;
+    saveHomeMix(picked);
+    setAllPackActive();
+    closeMixPicker();
+    showToast("Saved " + picked.length + " sounds to home remote");
+    animateDisplay("🎛️", "Custom");
+  });
+
+  mixPicker.addEventListener("click", function (e) {
+    e.stopPropagation();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && mixPicker.classList.contains("is-open")) {
+      closeMixPicker();
+    }
+  });
+
+  try {
+    if (!sessionStorage.getItem(PICKER_SEEN_KEY)) {
+      setTimeout(openMixPicker, 900);
+    }
+  } catch (err) {
+    setTimeout(openMixPicker, 900);
+  }
+
+  updateUtilityActionBtn();
 
   const copyrightPop = document.getElementById("copyrightPop");
   const copyrightPopClose = document.getElementById("copyrightPopClose");

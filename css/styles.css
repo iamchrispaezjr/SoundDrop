@@ -1214,6 +1214,7 @@ body {
 }
 
 .sound-btn {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1250,6 +1251,24 @@ body {
 
 .sound-btn--placeholder {
   opacity: 0.55;
+}
+
+.sound-btn-count {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  min-width: 16px;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffd27a;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  pointer-events: none;
 }
 
 .sound-btn:active,
@@ -1335,6 +1354,254 @@ body {
     0 1px 0 var(--btn-highlight) inset,
     0 1px 4px var(--btn-shadow);
 }
+
+/* --- Home remote customize picker --- */
+.mix-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-panel) - 1);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-panel), visibility var(--transition-panel);
+}
+
+.mix-picker-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mix-picker-backdrop[hidden] {
+  display: block;
+}
+
+.mix-picker {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: var(--z-panel);
+  width: min(440px, calc(100vw - 24px));
+  max-height: min(720px, calc(100dvh - 32px));
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(165deg, #252530 0%, #1a1a22 100%);
+  border: 1px solid var(--device-border);
+  border-radius: 16px;
+  box-shadow:
+    0 20px 56px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  transform: translate(-50%, -48%) scale(0.96);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--transition-panel),
+    transform var(--transition-panel),
+    visibility var(--transition-panel);
+  pointer-events: none;
+}
+
+.mix-picker.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+
+.mix-picker[hidden] {
+  display: flex;
+}
+
+.mix-picker-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mix-picker-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.mix-picker-note {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--btn-label);
+}
+
+.mix-picker-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--btn-label);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mix-picker-close:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--btn-text);
+}
+
+.mix-picker-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 0;
+}
+
+.mix-picker-count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--lcd-text);
+}
+
+.mix-picker-clear {
+  border: none;
+  background: transparent;
+  color: var(--btn-label);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mix-picker-clear:hover {
+  color: var(--btn-text);
+}
+
+.mix-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px 16px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.mix-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 64px;
+  padding: 8px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--btn-text);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.mix-pick:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.mix-pick.is-selected {
+  border-color: rgba(91, 140, 255, 0.55);
+  background: rgba(91, 140, 255, 0.14);
+  box-shadow: 0 0 0 1px rgba(91, 140, 255, 0.2) inset;
+}
+
+.mix-pick-emoji {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.mix-pick-emoji-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+}
+
+.mix-pick-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mix-picker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mix-picker-btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.mix-picker-btn--ghost {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--btn-text);
+}
+
+.mix-picker-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mix-picker-btn--primary {
+  background: linear-gradient(180deg, #6b9cff 0%, #4a7aef 100%);
+  border-color: transparent;
+  color: #fff;
+}
+
+.mix-picker-btn--primary:hover {
+  filter: brightness(1.06);
+}
+
+.mix-picker-btn--primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+  filter: none;
+}
+
+@media (max-width: 480px) {
+  .mix-picker-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .utility-bar {
+    flex-wrap: wrap;
+  }
+}
+
 
 .utility-btn--stop:hover {
   border-color: rgba(255, 91, 91, 0.4);
