@@ -229,7 +229,7 @@
     memes: [
       soundById("sus"),
       soundById("fuck"),
-      ph("me-1", "😐", "Bruh"),
+      fx("hello-there", "👋", "Hello There", "Hello There!.mp3", "Hello There.jpg"),
       ph("me-2", "💀", "Oof"),
       ph("me-3", "💥", "Vine Boom"),
       ph("me-4", "😢", "Emotional"),
@@ -532,6 +532,7 @@
     { id: "emperor", emoji: "⚡", label: "Emperor", src: "Emperor.mp3", icon: "Emperor.jpg" },
     { id: "joker", emoji: "🃏", label: "Joker", src: "Joker.m4a", icon: "Joker.jpg" },
     { id: "squidward-laugh", emoji: "🦑", label: "Squidward", src: "Squidward Laughing.mp3", icon: "Squidward Lol.jpg" },
+    { id: "hello-there", emoji: "👋", label: "Hello There", src: "Hello There!.mp3", icon: "Hello There.jpg" },
     { id: "sfx-alien", emoji: "👽", label: "Alien", src: "sfx/alien.mp3" },
     { id: "sfx-bark", emoji: "🐶", label: "Bark", src: "sfx/bark.mp3" },
     { id: "sfx-beep", emoji: "📟", label: "Beep Boop", src: "sfx/beep-boop.mp3" },
@@ -573,7 +574,6 @@
   const PACK_SIZE = 17;
   const MIX_SESSION_KEY = "noisegoblin-session-mix";
   const HOME_SESSION_KEY = "noisegoblin-home-mix";
-  const PICKER_SEEN_KEY = "noisegoblin-picker-seen";
   const PLAY_COUNTS_KEY = "noisegoblin-play-counts";
   const TRENDING_MIN_PLAYS = 50;
 
@@ -2238,11 +2238,6 @@
       mixPickerBackdrop.classList.add("is-open");
     });
     customizeBtn.setAttribute("aria-expanded", "true");
-    try {
-      sessionStorage.setItem(PICKER_SEEN_KEY, "1");
-    } catch (err) {
-      /* ignore */
-    }
   }
 
   function closeMixPicker() {
@@ -2338,14 +2333,6 @@
       closeMixPicker();
     }
   });
-
-  try {
-    if (!sessionStorage.getItem(PICKER_SEEN_KEY)) {
-      setTimeout(openMixPicker, 900);
-    }
-  } catch (err) {
-    setTimeout(openMixPicker, 900);
-  }
 
   updateUtilityActionBtn();
 
