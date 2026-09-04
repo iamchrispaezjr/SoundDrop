@@ -81,7 +81,7 @@
       emoji: "😂",
       label: "Laugh",
       src: "LMAO.mp3",
-      icon: "Ariana Grande Laughing.png",
+      icon: "Ariana Grande Laughing.jpg",
     },
     {
       id: "applause",
@@ -124,7 +124,7 @@
       id: "error",
       emoji: "🚫",
       label: "FML",
-      icon: "Sponge.png",
+      icon: "Sponge.jpg",
       src: "Fuck My Life.mp3",
     },
     {
@@ -165,7 +165,7 @@
       emoji: "💩",
       label: "Poo",
       src: "Big Ol' Dump.mp3",
-      icon: "Patrick Poo.png",
+      icon: "Patrick Poo.jpg",
     },
     {
       id: "iturnnow",
@@ -184,7 +184,7 @@
       emoji: "⚡",
       label: "I'm Alive!",
       src: "I'm ALIVE!.mp3",
-      icon: "Aegon 2.png",
+      icon: "Aegon 2.jpg",
     },
   ];
 
@@ -213,8 +213,8 @@
       fx("sponge-laugh", "🧽", "Sponge", "Sponge Laugh.m4a", "Sponge Laugh.jpg"),
       fx("hyena-laugh", "😆", "Hyena", "Hyena Laugh.mp3", "Hyena Laugh.jpg"),
       fx("emperor", "⚡", "Emperor", "Emperor.mp3", "Emperor.jpg"),
-      ph("la-6", "👥", "Crowd Laugh"),
-      ph("la-7", "😮‍💨", "Wheeze"),
+      fx("joker", "🃏", "Joker", "Joker.m4a", "Joker.jpg"),
+      fx("squidward-laugh", "🦑", "Squidward", "Squidward Laughing.mp3", "Squidward Lol.jpg"),
       ph("la-8", "🤣", "LOL"),
       ph("la-9", "😆", "Cackle"),
       ph("la-10", "🤡", "Clown Laugh"),
@@ -530,6 +530,8 @@
     { id: "sponge-laugh", emoji: "🧽", label: "Sponge", src: "Sponge Laugh.m4a", icon: "Sponge Laugh.jpg" },
     { id: "hyena-laugh", emoji: "😆", label: "Hyena", src: "Hyena Laugh.mp3", icon: "Hyena Laugh.jpg" },
     { id: "emperor", emoji: "⚡", label: "Emperor", src: "Emperor.mp3", icon: "Emperor.jpg" },
+    { id: "joker", emoji: "🃏", label: "Joker", src: "Joker.m4a", icon: "Joker.jpg" },
+    { id: "squidward-laugh", emoji: "🦑", label: "Squidward", src: "Squidward Laughing.mp3", icon: "Squidward Lol.jpg" },
     { id: "sfx-alien", emoji: "👽", label: "Alien", src: "sfx/alien.mp3" },
     { id: "sfx-bark", emoji: "🐶", label: "Bark", src: "sfx/bark.mp3" },
     { id: "sfx-beep", emoji: "📟", label: "Beep Boop", src: "sfx/beep-boop.mp3" },
