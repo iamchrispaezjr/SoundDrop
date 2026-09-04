@@ -36,7 +36,7 @@
   ];
   const INTRO_STORAGE_KEY = "sounddrop-intro-at";
   const INTRO_COOLDOWN_MS = 3 * 60 * 60 * 1000;
-  const INTRO_SRC = "Hello There!.mp3";
+  const INTRO_SRC = ""; // upload-only tool — no built-in intro sting
 
   // Preset options for the customizer panel
   const PRESET_COLORS = [
@@ -75,123 +75,9 @@
     },
   ];
 
-  const SOUNDS = [
-    {
-      id: "laugh",
-      emoji: "😂",
-      label: "Laugh",
-      src: "LMAO.mp3",
-      icon: "Ariana Grande Laughing.jpg",
-    },
-    {
-      id: "applause",
-      emoji: "👏",
-      label: "Applause",
-      src: "Nickelodean Clapping.mp3",
-    },
-    {
-      id: "boo",
-      emoji: "👎",
-      label: "Boo",
-      src: "Patrick - Boo.mp3",
-      icon: "Patrick Booing.png",
-    },
-    {
-      id: "airhorn",
-      emoji: "📣",
-      label: "Airhorn",
-      src: "Airhorn.mp3",
-    },
-    {
-      id: "drumroll",
-      emoji: "🥁",
-      label: "Rimshot",
-      src: "Rimshot.mp3",
-    },
-    {
-      id: "scratch",
-      emoji: "📀",
-      label: "Scratch",
-      src: "Record Scratch.mp3",
-    },
-    {
-      id: "cash",
-      emoji: "💰",
-      label: "Cash",
-      src: "cash.mp3",
-    },
-    {
-      id: "error",
-      emoji: "🚫",
-      label: "FML",
-      icon: "Sponge.jpg",
-      src: "Fuck My Life.mp3",
-    },
-    {
-      id: "success",
-      emoji: "✅",
-      label: "Typical",
-      src: "Typical Merged.mp3",
-      icon: "Squidward Typical.png",
-    },
-    {
-      id: "cheer",
-      emoji: "🗑️",
-      label: "Stupid",
-      src: "Vader - Clumsy & Stupid.mp3",
-      icon: "Vader.png",
-    },
-    {
-      id: "emergency",
-      emoji: "🚨",
-      label: "Emergency",
-      src: "Emergency Meeting.mp3",
-    },
-    {
-      id: "sus",
-      emoji: "👁️",
-      label: "Sus",
-      src: "Sus.mp3",
-    },
-    {
-      id: "scream",
-      emoji: "⭐",
-      label: "Scream",
-      src: "P Scream.mp3",
-      icon: "Patrick Trombone.png",
-    },
-    {
-      id: "poo",
-      emoji: "💩",
-      label: "Poo",
-      src: "Big Ol' Dump.mp3",
-      icon: "Patrick Poo.jpg",
-    },
-    {
-      id: "iturnnow",
-      emoji: "🛞",
-      label: "I Turn Now",
-      src: "I Turn Now.mp3",
-    },
-    {
-      id: "fuck",
-      emoji: "🤬",
-      label: "Fuck",
-      src: "FAHH SFX.mp3",
-    },
-    {
-      id: "imalive",
-      emoji: "⚡",
-      label: "I'm Alive!",
-      src: "I'm ALIVE!.mp3",
-      icon: "Aegon 2.jpg",
-    },
-  ];
+  const SOUNDS = [];
 
   function soundById(id) {
-    for (let i = 0; i < SOUNDS.length; i++) {
-      if (SOUNDS[i].id === id) return SOUNDS[i];
-    }
     return null;
   }
 
@@ -205,377 +91,52 @@
     return sound;
   }
 
-  // 17 packs × 17 named slots (names only for empty slots)
-  const PACK_SOUNDS = {
-    laughs: [
-      soundById("laugh"),
-      fx("jstar-laugh", "😂", "JStar", "JStar Laughing.mp3", "JStar Laughing.png"),
-      fx("sponge-laugh", "🧽", "Sponge", "Sponge Laugh.m4a", "Sponge Laugh.jpg"),
-      fx("hyena-laugh", "😆", "Hyena", "Hyena Laugh.mp3", "Hyena Laugh.jpg"),
-      fx("emperor", "⚡", "Emperor", "Emperor.mp3", "Emperor.jpg"),
-      fx("joker", "🃏", "Joker", "Joker.m4a", "Joker.jpg"),
-      fx("squidward-laugh", "🦑", "Squidward", "Squidward Laughing.mp3", "Squidward Lol.jpg"),
-      ph("la-8", "🤣", "LOL"),
-      ph("la-9", "😆", "Cackle"),
-      ph("la-10", "🤡", "Clown Laugh"),
-      ph("la-11", "📺", "Sitcom Laugh"),
-      ph("la-12", "🧒", "Kid Laugh"),
-      ph("la-13", "👴", "Old Laugh"),
-      ph("la-14", "🎭", "Fake Laugh"),
-      ph("la-15", "💨", "Breath Laugh"),
-      ph("la-16", "🎤", "Audience Laugh"),
-      ph("la-17", "🤪", "Manic Laugh"),
-    ],
-    memes: [
-      soundById("sus"),
-      soundById("fuck"),
-      fx("hello-there", "👋", "Hello There", "Hello There!.mp3", "Hello There.jpg"),
-      ph("me-2", "💀", "Oof"),
-      ph("me-3", "💥", "Vine Boom"),
-      ph("me-4", "😢", "Emotional"),
-      ph("me-5", "🥶", "Sheesh"),
-      ph("me-6", "💻", "Windows XP"),
-      ph("me-9", "🗿", "Stone Face"),
-      ph("me-10", "📢", "Announcement"),
-      ph("me-11", "🧃", "Juice"),
-      ph("me-12", "🫡", "Respect"),
-      ph("me-13", "😵", "Brain Rot"),
-      ph("me-14", "📱", "Notification"),
-      ph("me-15", "🦴", "Bone Crack"),
-      ph("me-16", "🎬", "Cut"),
-      soundById("imalive"),
-    ],
-    reactions: [
-      soundById("applause"),
-      soundById("boo"),
-      ph("re-3", "😮", "Wow"),
-      ph("re-4", "😲", "Gasp"),
-      ph("re-5", "🥹", "Aww"),
-      ph("re-6", "😰", "Oh No"),
-      ph("re-7", "🙌", "Yes"),
-      ph("re-8", "🙅", "No"),
-      ph("re-9", "🙄", "Eye Roll"),
-      ph("re-10", "🤔", "Hmm"),
-      ph("re-11", "😴", "Yawn"),
-      ph("re-12", "😬", "Awkward"),
-      ph("re-13", "🥳", "Celebrate"),
-      ph("re-14", "😤", "Frustrated"),
-      ph("re-15", "🫣", "Peek"),
-      ph("re-16", "🫡", "Salute"),
-      ph("re-17", "💔", "Heartbreak"),
-    ],
-    funny: [
-      soundById("poo"),
-      soundById("iturnnow"),
-      ph("bi-3", "💰", "Cash"),
-      ph("bi-4", "🤡", "Pranks"),
-      ph("bi-5", "❌", "Fail"),
-      ph("bi-6", "🏆", "Victory"),
-      ph("bi-7", "🥁", "Ba Dum Tss"),
-      ph("bi-8", "💨", "Whoosh"),
-      ph("bi-9", "🎺", "Sad Trombone"),
-      ph("bi-10", "🎬", "Action"),
-      ph("bi-11", "🪄", "Magic"),
-      ph("bi-12", "🪞", "Reveal"),
-      ph("bi-13", "⏱️", "Tick Tock"),
-      ph("bi-14", "🛎️", "Ding"),
-      ph("bi-15", "📉", "Downer"),
-      ph("bi-16", "📈", "Stinger"),
-      ph("bi-17", "🎞️", "Transition"),
-    ],
-    stings: [
-      soundById("error"),
-      ph("st-2", "🥁", "Rimshot"),
-      ph("st-3", "🎺", "Sad Trombone"),
-      ph("st-4", "🎻", "Suspense"),
-      ph("st-5", "🎹", "Piano Hit"),
-      ph("st-6", "🔔", "Chime"),
-      ph("st-7", "📻", "Radio Sting"),
-      ph("st-8", "🎬", "Cue In"),
-      ph("st-9", "📉", "Downer"),
-      ph("st-10", "📈", "Uplift"),
-      ph("st-11", "⚡", "Shock"),
-      ph("st-12", "🪞", "Reveal"),
-      ph("st-13", "🕰️", "Time Pass"),
-      ph("st-14", "🎭", "Drama"),
-      ph("st-15", "💨", "Whoosh Hit"),
-      ph("st-16", "🛎️", "Ding"),
-      ph("st-17", "📼", "Outro"),
-    ],
-    scifi: [
-      ph("sf-1", "⚡", "I'm Alive!"),
-      ph("sf-2", "🔫", "Laser"),
-      ph("sf-3", "🌌", "Warp"),
-      ph("sf-4", "🤖", "Robot"),
-      ph("sf-5", "👽", "Alien"),
-      ph("sf-6", "✨", "Phaser"),
-      ph("sf-7", "📟", "Beep Boop"),
-      ph("sf-8", "🚀", "Hyperspace"),
-      ph("sf-9", "🛸", "UFO"),
-      ph("sf-10", "🛰️", "Satellite"),
-      ph("sf-11", "🔮", "Scanner"),
-      ph("sf-12", "⚙️", "Mech"),
-      ph("sf-13", "💫", "Teleport"),
-      ph("sf-14", "🛡️", "Shield"),
-      ph("sf-15", "💣", "Plasma"),
-      ph("sf-16", "📡", "Signal"),
-      ph("sf-17", "🧬", "Clone"),
-    ],
-    animals: [
-      ph("an-1", "🐶", "Bark"),
-      ph("an-2", "🐱", "Meow"),
-      ph("an-3", "🐔", "Chicken"),
-      ph("an-4", "🐮", "Moo"),
-      ph("an-5", "🐓", "Rooster"),
-      ph("an-6", "🦆", "Quack"),
-      ph("an-7", "🐺", "Howl"),
-      ph("an-8", "🦗", "Cricket"),
-      ph("an-9", "🐴", "Neigh"),
-      ph("an-10", "🐷", "Oink"),
-      ph("an-11", "🐑", "Baa"),
-      ph("an-12", "🦁", "Roar"),
-      ph("an-13", "🐘", "Trumpet"),
-      ph("an-14", "🐸", "Ribbit"),
-      ph("an-15", "🐝", "Buzz"),
-      ph("an-16", "🦉", "Hoot"),
-      ph("an-17", "🐒", "Chatter"),
-    ],
-    party: [
-      soundById("airhorn"),
-      ph("pa-1", "👏", "Applause"),
-      ph("pa-3", "💰", "Cash"),
-      ph("pa-4", "🍾", "Pop"),
-      ph("pa-5", "🎊", "Confetti"),
-      ph("pa-6", "🥳", "Cheer"),
-      ph("pa-7", "😗", "Whistle"),
-      ph("pa-8", "3️⃣", "Countdown"),
-      ph("pa-9", "🎂", "Birthday"),
-      ph("pa-10", "🎈", "Balloon"),
-      ph("pa-11", "🎆", "Firework"),
-      ph("pa-12", "🪩", "Disco"),
-      ph("pa-13", "🎷", "Jam"),
-      ph("pa-14", "🥂", "Toast"),
-      ph("pa-15", "🕺", "Dance"),
-      ph("pa-16", "🎁", "Surprise"),
-      ph("pa-17", "📢", "Hype"),
-    ],
-    horror: [
-      ph("ho-1", "⭐", "Scream"),
-      ph("ho-2", "🚪", "Creak"),
-      ph("ho-3", "⛈️", "Thunder"),
-      ph("ho-4", "👻", "Ghost"),
-      ph("ho-5", "😱", "Jumpscare"),
-      ph("ho-6", "❤️", "Heartbeat"),
-      ph("ho-7", "🐺", "Howl"),
-      ph("ho-8", "🗣️", "Whisper"),
-      ph("ho-9", "⛓️", "Chains"),
-      ph("ho-10", "🩸", "Drip"),
-      ph("ho-11", "🪦", "Grave"),
-      ph("ho-12", "🕷️", "Crawl"),
-      ph("ho-13", "🔦", "Flicker"),
-      ph("ho-14", "🪟", "Rattle"),
-      ph("ho-15", "🧛", "Hiss"),
-      ph("ho-16", "🦇", "Flutter"),
-      ph("ho-17", "🌑", "Umbra"),
-    ],
-    games: [
-      ph("ga-1", "🚨", "Emergency"),
-      ph("ga-2", "👁️", "Sus"),
-      ph("ga-3", "✅", "Typical"),
-      ph("ga-4", "⬆️", "Level Up"),
-      ph("ga-5", "☠️", "Game Over"),
-      ph("ga-6", "🪙", "Coin"),
-      ph("ga-7", "🍄", "Power Up"),
-      ph("ga-8", "🥊", "Hit"),
-      ph("ga-9", "🏁", "Start"),
-      ph("ga-10", "💎", "Loot"),
-      ph("ga-11", "🛡️", "Block"),
-      ph("ga-12", "🏹", "Shot"),
-      ph("ga-13", "🧩", "Puzzle"),
-      ph("ga-14", "🧨", "Explosion"),
-      ph("ga-15", "🕹️", "Select"),
-      ph("ga-16", "🥇", "Quest Done"),
-      ph("ga-17", "👾", "Boss"),
-    ],
-    nature: [
-      ph("na-1", "🌧️", "Rain"),
-      ph("na-2", "💨", "Wind"),
-      ph("na-3", "🌊", "Waves"),
-      ph("na-4", "🔥", "Campfire"),
-      ph("na-5", "🐦", "Birdsong"),
-      ph("na-6", "💧", "Creek"),
-      ph("na-7", "🍃", "Leaves"),
-      ph("na-8", "⚡", "Lightning"),
-      ph("na-9", "🌋", "Rumble"),
-      ph("na-10", "🧊", "Ice Crack"),
-      ph("na-11", "🌵", "Desert"),
-      ph("na-12", "🌲", "Forest"),
-      ph("na-13", "🪨", "Rockslide"),
-      ph("na-14", "🦋", "Flutter"),
-      ph("na-15", "🌙", "Night"),
-      ph("na-16", "☀️", "Dawn"),
-      ph("na-17", "🌈", "After Rain"),
-    ],
-    cartoons: [
-      ph("ca-1", "🏃", "Zip"),
-      ph("ca-2", "💫", "Bonk"),
-      ph("ca-3", "🌀", "Spin Out"),
-      ph("ca-4", "🫠", "Squish"),
-      ph("ca-5", "🛎️", "Boing"),
-      ph("ca-6", "💨", "Zoom"),
-      ph("ca-7", "🧨", "Kaboom"),
-      ph("ca-8", "🪄", "Poof"),
-      ph("ca-9", "🫠", "Slide"),
-      ph("ca-10", "🔔", "Twang"),
-      ph("ca-11", "😛", "Raspberry"),
-      ph("ca-12", "🪜", "Fall Down"),
-      ph("ca-13", "🎈", "Deflate"),
-      ph("ca-14", "🧲", "Stretch"),
-      ph("ca-15", "🧃", "Gulp"),
-      ph("ca-16", "👟", "Squeak Step"),
-      ph("ca-17", "🎭", "Take"),
-    ],
-    alerts: [
-      ph("al-1", "🔔", "Ping"),
-      ph("al-2", "⏰", "Alarm"),
-      ph("al-3", "📢", "Broadcast"),
-      ph("al-4", "🚨", "Siren"),
-      ph("al-5", "✉️", "Message"),
-      ph("al-6", "📞", "Ring"),
-      ph("al-7", "⚠️", "Warning"),
-      ph("al-8", "✅", "Success"),
-      ph("al-9", "❌", "Error"),
-      ph("al-10", "🔋", "Low Battery"),
-      ph("al-11", "📶", "Connected"),
-      ph("al-12", "🔒", "Locked"),
-      ph("al-13", "🔓", "Unlocked"),
-      ph("al-14", "📥", "Download Done"),
-      ph("al-15", "🗓️", "Reminder"),
-      ph("al-16", "🧭", "Chime"),
-      ph("al-17", "🛰️", "Beacon"),
-    ],
-    vehicles: [
-      ph("ve-1", "🚗", "Engine"),
-      ph("ve-2", "🚕", "Horn"),
-      ph("ve-3", "🛞", "Skid"),
-      ph("ve-4", "🚲", "Bike Bell"),
-      ph("ve-5", "🚂", "Train"),
-      ph("ve-6", "✈️", "Jet"),
-      ph("ve-7", "🚁", "Chopper"),
-      ph("ve-8", "🚤", "Boat"),
-      ph("ve-9", "🚌", "Bus Door"),
-      ph("ve-10", "🚓", "Siren"),
-      ph("ve-11", "🛵", "Scooter"),
-      ph("ve-12", "🚛", "Truck"),
-      ph("ve-13", "🚀", "Launch"),
-      ph("ve-14", "🛑", "Brake"),
-      ph("ve-15", "⛽", "Fuel Cap"),
-      ph("ve-16", "🛠️", "Garage"),
-      ph("ve-17", "🏁", "Rev"),
-    ],
-    fantasy: [
-      ph("fa-1", "🪄", "Spell"),
-      ph("fa-2", "🐉", "Dragon"),
-      ph("fa-3", "⚔️", "Sword"),
-      ph("fa-4", "🛡️", "Armor"),
-      ph("fa-5", "🏰", "Castle"),
-      ph("fa-6", "🧝", "Elf"),
-      ph("fa-7", "🧙", "Wizard"),
-      ph("fa-8", "💎", "Gem"),
-      ph("fa-9", "🏹", "Arrow"),
-      ph("fa-10", "🔥", "Fireball"),
-      ph("fa-11", "❄️", "Frost"),
-      ph("fa-12", "🌪️", "Tornado"),
-      ph("fa-13", "📜", "Scroll"),
-      ph("fa-14", "🧚", "Fairy"),
-      ph("fa-15", "🕳️", "Portal"),
-      ph("fa-16", "🗡️", "Clash"),
-      ph("fa-17", "👑", "Quest"),
-    ],
-    retro: [
-      ph("rt-1", "🕹️", "8-Bit Jump"),
-      ph("rt-2", "👾", "Pixel Hit"),
-      ph("rt-3", "📼", "VHS"),
-      ph("rt-4", "📺", "Static"),
-      ph("rt-5", "💾", "Dial-Up"),
-      ph("rt-6", "📟", "Pager"),
-      ph("rt-7", "💿", "CD Skip"),
-      ph("rt-8", "📷", "Flash"),
-      ph("rt-9", "☎️", "Rotary"),
-      ph("rt-10", "🖨️", "Printer"),
-      ph("rt-11", "🎮", "Insert Coin"),
-      ph("rt-12", "🧱", "Block Break"),
-      ph("rt-13", "🟩", "Blip"),
-      ph("rt-14", "🟥", "Game Select"),
-      ph("rt-15", "🟨", "Power On"),
-      ph("rt-16", "🟪", "Glitch"),
-      ph("rt-17", "🟫", "Continue?"),
-    ],
-  };
-
-  // Home sounds not yet assigned to a themed pack — used by Mix
-  const MIX_LEFTOVER_IDS = [
-    "drumroll",
-    "scratch",
-    "cash",
-    "success",
-    "cheer",
-    "emergency",
-    "scream",
+  // Built-in catalogs removed — categories organize local uploads only
+  const PACK_SOUNDS = {};
+  const MIX_LEFTOVER_IDS = [];
+  const EXTRA_SFX = [];
+  const ORGANIZER_PACKS = [
+    { id: "laughs", label: "Laughs", emoji: "😂" },
+    { id: "memes", label: "Memes", emoji: "📱" },
+    { id: "reactions", label: "Reactions", emoji: "👏" },
+    { id: "funny", label: "Funny", emoji: "🤪" },
+    { id: "stings", label: "Stings", emoji: "🎼" },
+    { id: "scifi", label: "Sci-Fi", emoji: "🛸" },
+    { id: "animals", label: "Animals", emoji: "🐶" },
+    { id: "party", label: "Party", emoji: "🎉" },
+    { id: "horror", label: "Horror", emoji: "👻" },
+    { id: "games", label: "Games", emoji: "🎮" },
+    { id: "nature", label: "Nature", emoji: "🌿" },
+    { id: "cartoons", label: "Cartoons", emoji: "📺" },
+    { id: "alerts", label: "Alerts", emoji: "🔔" },
+    { id: "vehicles", label: "Vehicles", emoji: "🚗" },
+    { id: "fantasy", label: "Fantasy", emoji: "🧙" },
+    { id: "retro", label: "Retro", emoji: "🕹️" },
   ];
 
-  // Extra royalty-free clips that fill out Mix when leftovers are under 17
-  const EXTRA_SFX = [
-    { id: "jstar-laugh", emoji: "😂", label: "JStar", src: "JStar Laughing.mp3", icon: "JStar Laughing.png" },
-    { id: "sponge-laugh", emoji: "🧽", label: "Sponge", src: "Sponge Laugh.m4a", icon: "Sponge Laugh.jpg" },
-    { id: "hyena-laugh", emoji: "😆", label: "Hyena", src: "Hyena Laugh.mp3", icon: "Hyena Laugh.jpg" },
-    { id: "emperor", emoji: "⚡", label: "Emperor", src: "Emperor.mp3", icon: "Emperor.jpg" },
-    { id: "joker", emoji: "🃏", label: "Joker", src: "Joker.m4a", icon: "Joker.jpg" },
-    { id: "squidward-laugh", emoji: "🦑", label: "Squidward", src: "Squidward Laughing.mp3", icon: "Squidward Lol.jpg" },
-    { id: "hello-there", emoji: "👋", label: "Hello There", src: "Hello There!.mp3", icon: "Hello There.jpg" },
-    { id: "sfx-alien", emoji: "👽", label: "Alien", src: "sfx/alien.mp3" },
-    { id: "sfx-bark", emoji: "🐶", label: "Bark", src: "sfx/bark.mp3" },
-    { id: "sfx-beep", emoji: "📟", label: "Beep Boop", src: "sfx/beep-boop.mp3" },
-    { id: "sfx-cheer", emoji: "🥳", label: "Cheer", src: "sfx/cheer.mp3" },
-    { id: "sfx-chicken", emoji: "🐔", label: "Chicken", src: "sfx/chicken.mp3" },
-    { id: "sfx-chuckle", emoji: "😄", label: "Chuckle", src: "sfx/chuckle.mp3" },
-    { id: "sfx-coin", emoji: "🪙", label: "Coin", src: "sfx/coin.mp3" },
-    { id: "sfx-creak", emoji: "🚪", label: "Creak", src: "sfx/creak.mp3" },
-    { id: "sfx-cricket", emoji: "🦗", label: "Cricket", src: "sfx/cricket.mp3" },
-    { id: "sfx-crowd", emoji: "👥", label: "Crowd Laugh", src: "sfx/crowd-laugh.mp3" },
-    { id: "sfx-fail", emoji: "❌", label: "Fail", src: "sfx/fail.mp3" },
-    { id: "sfx-gameover", emoji: "☠️", label: "Game Over", src: "sfx/game-over.mp3" },
-    { id: "sfx-ghost", emoji: "👻", label: "Ghost", src: "sfx/ghost.mp3" },
-    { id: "sfx-giggle", emoji: "🤭", label: "Giggle", src: "sfx/giggle.mp3" },
-    { id: "sfx-heartbeat", emoji: "❤️", label: "Heartbeat", src: "sfx/heartbeat.mp3" },
-    { id: "sfx-hit", emoji: "🥊", label: "Hit", src: "sfx/hit.mp3" },
-    { id: "sfx-howl", emoji: "🐺", label: "Howl", src: "sfx/howl.mp3" },
-    { id: "sfx-hyperspace", emoji: "🚀", label: "Hyperspace", src: "sfx/hyperspace.mp3" },
-    { id: "sfx-jumpscare", emoji: "😱", label: "Jumpscare", src: "sfx/jumpscare.mp3" },
-    { id: "sfx-laser", emoji: "🔫", label: "Laser", src: "sfx/laser.mp3" },
-    { id: "sfx-levelup", emoji: "⬆️", label: "Level Up", src: "sfx/level-up.mp3" },
-    { id: "sfx-meow", emoji: "🐱", label: "Meow", src: "sfx/meow.mp3" },
-    { id: "sfx-moo", emoji: "🐮", label: "Moo", src: "sfx/moo.mp3" },
-    { id: "sfx-horn", emoji: "🎊", label: "Party Horn", src: "sfx/party-horn.mp3" },
-    { id: "sfx-phaser", emoji: "✨", label: "Phaser", src: "sfx/phaser.mp3" },
-    { id: "sfx-pop", emoji: "🍾", label: "Pop", src: "sfx/pop.mp3" },
-    { id: "sfx-powerup", emoji: "🍄", label: "Power Up", src: "sfx/power-up.mp3" },
-    { id: "sfx-quack", emoji: "🦆", label: "Quack", src: "sfx/quack.mp3" },
-    { id: "sfx-robot", emoji: "🤖", label: "Robot", src: "sfx/robot.mp3" },
-    { id: "sfx-rooster", emoji: "🐓", label: "Rooster", src: "sfx/rooster.mp3" },
-    { id: "sfx-trombone", emoji: "🎺", label: "Sad Trombone", src: "sfx/sad-trombone.mp3" },
-    { id: "sfx-thunder", emoji: "⛈️", label: "Thunder", src: "sfx/thunder.mp3" },
-    { id: "sfx-victory", emoji: "🏆", label: "Victory", src: "sfx/victory.mp3" },
-    { id: "sfx-warp", emoji: "🌌", label: "Warp", src: "sfx/warp.mp3" },
-    { id: "sfx-whistle", emoji: "😗", label: "Whistle", src: "sfx/whistle.mp3" },
-    { id: "sfx-whoosh", emoji: "💨", label: "Whoosh", src: "sfx/whoosh.mp3" },
-  ];
+  function isOrganizerPack(packId) {
+    return ORGANIZER_PACKS.some(function (p) {
+      return p.id === packId;
+    });
+  }
+
+  function customsInCategory(packId) {
+    return customSoundsCache.filter(function (sound) {
+      return sound.category === packId;
+    });
+  }
 
   const PACK_SIZE = 17;
   const MIX_SESSION_KEY = "noisegoblin-session-mix";
   const HOME_SESSION_KEY = "noisegoblin-home-mix";
   const PLAY_COUNTS_KEY = "noisegoblin-play-counts";
   const TRENDING_MIN_PLAYS = 50;
+  const CUSTOM_DB_NAME = "noisegoblin-custom-sfx";
+  const CUSTOM_STORE = "sounds";
+  const CUSTOM_MAX_COUNT = 50;
+  const CUSTOM_MAX_BYTES = 3 * 1024 * 1024;
+
+  let customSoundsCache = [];
 
   function cloneSound(sound) {
     return {
@@ -585,7 +146,24 @@
       src: sound.src,
       icon: sound.icon,
       placeholder: sound.placeholder,
+      custom: !!sound.custom,
+      category: sound.category || "",
+      uploadSlot: !!sound.uploadSlot,
     };
+  }
+
+  function serializeSound(sound) {
+    const copy = {
+      id: sound.id,
+      emoji: sound.emoji,
+      label: sound.label,
+      icon: sound.icon,
+      placeholder: sound.placeholder,
+      custom: !!sound.custom,
+      category: sound.category || "",
+    };
+    if (!sound.custom) copy.src = sound.src;
+    return copy;
   }
 
   function withCenteredSeventeenth(list) {
@@ -607,21 +185,182 @@
     return list;
   }
 
-  function mixPool() {
-    const pool = [];
-    const seen = {};
-
-    function add(sound) {
-      if (!sound || !sound.src || seen[sound.id]) return;
-      seen[sound.id] = true;
-      pool.push(cloneSound(sound));
-    }
-
-    MIX_LEFTOVER_IDS.forEach(function (id) {
-      add(soundById(id));
+  function openCustomDb() {
+    return new Promise(function (resolve, reject) {
+      if (!window.indexedDB) {
+        reject(new Error("IndexedDB unavailable"));
+        return;
+      }
+      const req = indexedDB.open(CUSTOM_DB_NAME, 1);
+      req.onupgradeneeded = function () {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(CUSTOM_STORE)) {
+          db.createObjectStore(CUSTOM_STORE, { keyPath: "id" });
+        }
+      };
+      req.onsuccess = function () {
+        resolve(req.result);
+      };
+      req.onerror = function () {
+        reject(req.error || new Error("IndexedDB open failed"));
+      };
     });
-    EXTRA_SFX.forEach(add);
-    return pool;
+  }
+
+  function labelFromFilename(name) {
+    const base = String(name || "Custom")
+      .replace(/\.[^.]+$/, "")
+      .replace(/[_-]+/g, " ")
+      .trim();
+    const cleaned = base || "Custom";
+    return cleaned.length > 18 ? cleaned.slice(0, 18).trim() : cleaned;
+  }
+
+  function hydrateCustomRecord(record) {
+    const url = URL.createObjectURL(record.blob);
+    return {
+      id: record.id,
+      emoji: record.emoji || "🎵",
+      label: record.label || "Custom",
+      src: url,
+      custom: true,
+      category: record.category || "",
+      _objectUrl: url,
+      _blob: record.blob,
+      _mime: record.mime || "audio/mpeg",
+      _createdAt: record.createdAt || Date.now(),
+    };
+  }
+
+  function revokeCustomSound(sound) {
+    if (sound && sound._objectUrl) {
+      try {
+        URL.revokeObjectURL(sound._objectUrl);
+      } catch (err) {
+        /* ignore */
+      }
+    }
+  }
+
+  function loadCustomSounds() {
+    return openCustomDb()
+      .then(function (db) {
+        return new Promise(function (resolve, reject) {
+          const tx = db.transaction(CUSTOM_STORE, "readonly");
+          const store = tx.objectStore(CUSTOM_STORE);
+          const req = store.getAll();
+          req.onsuccess = function () {
+            resolve(req.result || []);
+          };
+          req.onerror = function () {
+            reject(req.error);
+          };
+        });
+      })
+      .then(function (records) {
+        customSoundsCache.forEach(revokeCustomSound);
+        customSoundsCache = records
+          .sort(function (a, b) {
+            return (a.createdAt || 0) - (b.createdAt || 0);
+          })
+          .map(hydrateCustomRecord);
+        return customSoundsCache;
+      })
+      .catch(function () {
+        customSoundsCache = [];
+        return customSoundsCache;
+      });
+  }
+
+  function saveCustomSoundRecord(record) {
+    return openCustomDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(CUSTOM_STORE, "readwrite");
+        tx.objectStore(CUSTOM_STORE).put(record);
+        tx.oncomplete = function () {
+          resolve(record);
+        };
+        tx.onerror = function () {
+          reject(tx.error);
+        };
+      });
+    });
+  }
+
+  function persistCustomSound(sound) {
+    if (!sound || !sound.custom || !sound._blob) {
+      return Promise.reject(new Error("Missing custom sound data"));
+    }
+    return saveCustomSoundRecord({
+      id: sound.id,
+      label: sound.label,
+      emoji: sound.emoji || "🎵",
+      mime: sound._mime || "audio/mpeg",
+      blob: sound._blob,
+      createdAt: sound._createdAt || Date.now(),
+      category: sound.category || "",
+    });
+  }
+
+  function setCustomSoundCategory(id, category) {
+    const sound = findCustomSound(id);
+    if (!sound) return Promise.resolve(null);
+    sound.category = category || "";
+    return persistCustomSound(sound).then(function () {
+      return sound;
+    });
+  }
+
+  function deleteCustomSoundRecord(id) {
+    return openCustomDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(CUSTOM_STORE, "readwrite");
+        tx.objectStore(CUSTOM_STORE).delete(id);
+        tx.oncomplete = function () {
+          resolve();
+        };
+        tx.onerror = function () {
+          reject(tx.error);
+        };
+      });
+    });
+  }
+
+  function findCustomSound(id) {
+    for (let i = 0; i < customSoundsCache.length; i++) {
+      if (customSoundsCache[i].id === id) return customSoundsCache[i];
+    }
+    return null;
+  }
+
+  function resolveStoredSound(sound) {
+    if (!sound) return null;
+    if (sound.custom || String(sound.id || "").indexOf("custom-") === 0) {
+      const live = findCustomSound(sound.id);
+      return live ? cloneSound(live) : null;
+    }
+    // Upload-only tool: ignore legacy built-in catalog entries
+    return null;
+  }
+
+  function realBoard(list) {
+    const filled = (list || [])
+      .filter(function (s) {
+        return s && s.src && !s.placeholder;
+      })
+      .slice(0, PACK_SIZE)
+      .map(cloneSound);
+    if (!filled.length) return [];
+    if (filled.length < PACK_SIZE) return filled;
+    return withCenteredSeventeenth(filled);
+  }
+
+  function syncHomeFromLibrary() {
+    if (!customSoundsCache.length) {
+      clearHomeMix();
+      return null;
+    }
+    return saveHomeMix(customSoundsCache.slice(0, PACK_SIZE));
   }
 
   function buildSessionMix(forceNew) {
@@ -630,8 +369,11 @@
         const raw = sessionStorage.getItem(MIX_SESSION_KEY);
         if (raw) {
           const saved = JSON.parse(raw);
-          if (Array.isArray(saved) && saved.length === PACK_SIZE) {
-            return withCenteredSeventeenth(saved);
+          if (Array.isArray(saved) && saved.length) {
+            const resolved = saved.map(resolveStoredSound).filter(Boolean);
+            if (resolved.length) {
+              return realBoard(resolved);
+            }
           }
         }
       } catch (err) {
@@ -639,18 +381,22 @@
       }
     }
 
-    const picked = shuffleList(mixPool()).slice(0, PACK_SIZE);
-    while (picked.length < PACK_SIZE) {
-      picked.push(cloneSound(SOUNDS[picked.length % SOUNDS.length]));
+    const pool = allPlayablePool();
+    if (!pool.length) {
+      return [];
     }
 
+    const picked = shuffleList(pool).slice(0, PACK_SIZE);
     try {
-      sessionStorage.setItem(MIX_SESSION_KEY, JSON.stringify(picked));
+      sessionStorage.setItem(
+        MIX_SESSION_KEY,
+        JSON.stringify(picked.map(serializeSound))
+      );
     } catch (err) {
       /* private mode / quota */
     }
 
-    return withCenteredSeventeenth(picked);
+    return realBoard(picked);
   }
 
   let sessionMix = null;
@@ -677,8 +423,7 @@
       pool.push(cloneSound(sound));
     }
 
-    SOUNDS.forEach(add);
-    EXTRA_SFX.forEach(add);
+    customSoundsCache.forEach(add);
     return pool;
   }
 
@@ -688,7 +433,9 @@
       if (!raw) return null;
       const saved = JSON.parse(raw);
       if (!Array.isArray(saved) || !saved.length || saved.length > PACK_SIZE) return null;
-      return withCenteredSeventeenth(saved.map(cloneSound));
+      const resolved = saved.map(resolveStoredSound).filter(Boolean);
+      if (!resolved.length) return null;
+      return withCenteredSeventeenth(resolved);
     } catch (err) {
       return null;
     }
@@ -697,7 +444,10 @@
   function saveHomeMix(list) {
     const cleaned = list.slice(0, PACK_SIZE).map(cloneSound);
     try {
-      sessionStorage.setItem(HOME_SESSION_KEY, JSON.stringify(cleaned));
+      sessionStorage.setItem(
+        HOME_SESSION_KEY,
+        JSON.stringify(cleaned.map(serializeSound))
+      );
     } catch (err) {
       /* ignore */
     }
@@ -714,13 +464,16 @@
     customHomeSounds = null;
   }
 
-  let customHomeSounds = loadHomeMix();
+  let customHomeSounds = null;
 
   function getHomeSounds() {
     if (customHomeSounds && customHomeSounds.length) {
-      return customHomeSounds;
+      return realBoard(customHomeSounds);
     }
-    return withCenteredSeventeenth(SOUNDS);
+    if (customSoundsCache.length) {
+      return realBoard(customSoundsCache.slice(0, PACK_SIZE));
+    }
+    return [];
   }
 
   function loadPlayCounts() {
@@ -772,13 +525,7 @@
 
     // Keep a normal mix underneath until sounds clear the 50× gate
     const filler = shuffleList(rest);
-    const ranked = hot.concat(filler).slice(0, PACK_SIZE);
-
-    while (ranked.length < PACK_SIZE) {
-      ranked.push(cloneSound(SOUNDS[ranked.length % SOUNDS.length]));
-    }
-
-    return withCenteredSeventeenth(ranked.slice(0, PACK_SIZE));
+    return realBoard(hot.concat(filler));
   }
 
   let activePack = "all";
@@ -815,8 +562,8 @@
   const shareList = document.getElementById("shareList");
   const volumeBtn = document.getElementById("volumeBtn");
   const volumeSlider = document.getElementById("volumeSlider");
-  const stopBtn = document.getElementById("stopBtn");
   const customizeBtn = document.getElementById("customizeBtn");
+  const mineBtn = document.getElementById("mineBtn");
   const mixPicker = document.getElementById("mixPicker");
   const mixPickerBackdrop = document.getElementById("mixPickerBackdrop");
   const mixPickerClose = document.getElementById("mixPickerClose");
@@ -827,6 +574,7 @@
   const mixPickerSurprise = document.getElementById("mixPickerSurprise");
   const mixPickerSave = document.getElementById("mixPickerSave");
   const mixPickerCats = document.getElementById("mixPickerCats");
+  const mineFileInput = document.getElementById("mineFileInput");
   const packBookmark = document.getElementById("packBookmark");
   const packTab = document.getElementById("packTab");
   const packsHeaderBtn = document.getElementById("packsHeaderBtn");
@@ -1392,17 +1140,21 @@
 
   function onSoundClick(sound, btn) {
     flashButton(btn);
-    animateDisplay(sound.emoji, sound.label, sound.icon);
-    if (sound.placeholder || !sound.src) {
-      showToast(sound.label + " — coming soon");
+    if (sound.uploadSlot || (sound.placeholder && !sound.src)) {
+      animateDisplay("⬆️", "Upload");
+      if (mineFileInput) mineFileInput.click();
       return;
     }
+    if (sound.placeholder || !sound.src) {
+      showToast(sound.label + " — empty slot");
+      return;
+    }
+    animateDisplay(sound.emoji, sound.label, sound.icon);
     playSound(sound);
 
     const plays = recordPlay(sound.id);
     sound.plays = plays;
 
-    // Counts are tracked everywhere; badges only show on Trending after the 50× gate
     if (activePack === "trending" && plays > TRENDING_MIN_PLAYS) {
       let countEl = btn.querySelector(".sound-btn-count");
       if (!countEl) {
@@ -1415,37 +1167,68 @@
   }
 
   function soundsForPack(packId) {
-    if (!packId || packId === "all") {
-      return getHomeSounds();
-    }
     if (packId === "mix") {
       return getSessionMix();
     }
     if (packId === "trending") {
       return getTrendingSounds();
     }
-    if (!PACK_SOUNDS[packId]) {
-      return getHomeSounds();
+    if (packId === "mine") {
+      return realBoard(customSoundsCache.slice(0, PACK_SIZE));
     }
-    return withCenteredSeventeenth(PACK_SOUNDS[packId].filter(Boolean).slice(0, PACK_SIZE));
+    if (isOrganizerPack(packId)) {
+      return realBoard(customsInCategory(packId).slice(0, PACK_SIZE));
+    }
+    return getHomeSounds();
   }
 
   function buildKeypad(packId) {
-    const list = soundsForPack(packId || activePack);
+    const pack = packId || activePack;
+    const list = soundsForPack(pack).filter(function (s) {
+      return s && s.src && !s.placeholder;
+    });
     keypadEl.innerHTML = "";
+
+    if (!list.length) {
+      const empty = document.createElement("div");
+      empty.className = "keypad-empty";
+      const isCat = isOrganizerPack(pack);
+      const title =
+        pack === "mix"
+          ? "Mix needs uploads"
+          : pack === "trending"
+            ? "Trending needs uploads"
+            : isCat
+              ? "No sounds in this category"
+              : "Your remote is empty";
+      const note = isCat
+        ? "Upload while this category is open (max 50 sounds, 3MB each)"
+        : "Upload up to 50 audio files (3MB each) — stored only on this device";
+      empty.innerHTML =
+        '<p class="keypad-empty-title">' +
+        title +
+        "</p>" +
+        '<p class="keypad-empty-note">' +
+        note +
+        "</p>" +
+        '<button type="button" class="keypad-empty-btn" id="keypadUploadBtn">Upload SFX</button>';
+      keypadEl.appendChild(empty);
+      const up = document.getElementById("keypadUploadBtn");
+      if (up && mineFileInput) {
+        up.addEventListener("click", function () {
+          mineFileInput.click();
+        });
+      }
+      return;
+    }
 
     list.forEach(function (sound, index) {
       const isCenter = list.length === PACK_SIZE && index === PACK_SIZE - 1;
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className =
-        "sound-btn" +
-        (isCenter ? " sound-btn--center" : "") +
-        (sound.placeholder ? " sound-btn--placeholder" : "");
-      btn.setAttribute(
-        "aria-label",
-        sound.placeholder ? sound.label + " (coming soon)" : "Play " + sound.label
-      );
+        "sound-btn" + (isCenter ? " sound-btn--center" : "");
+      btn.setAttribute("aria-label", "Play " + sound.label);
       btn.dataset.id = sound.id;
 
       const iconHtml = sound.icon
@@ -1454,11 +1237,6 @@
           '" alt="">'
         : sound.emoji;
 
-      const countHtml =
-        sound.showPlays && (sound.plays || 0) > TRENDING_MIN_PLAYS
-          ? '<span class="sound-btn-count">' + (sound.plays || 0) + "</span>"
-          : "";
-
       btn.innerHTML =
         '<span class="sound-btn-emoji" aria-hidden="true">' +
         iconHtml +
@@ -1466,7 +1244,9 @@
         '<span class="sound-btn-label">' +
         sound.label +
         "</span>" +
-        countHtml;
+        (sound.showPlays && (sound.plays || 0) > TRENDING_MIN_PLAYS
+          ? '<span class="sound-btn-count">' + (sound.plays || 0) + "</span>"
+          : "");
 
       btn.addEventListener("click", function () {
         onSoundClick(sound, btn);
@@ -1479,9 +1259,9 @@
   // ---------------------------------------------------------------------------
   // Share menu
   // ---------------------------------------------------------------------------
-  const SHARE_TITLE = "Check out Noisegoblin";
+  const SHARE_TITLE = "Check out Soundgoblin";
   const SHARE_MESSAGE =
-    "Check out Noisegoblin — a free online soundboard remote!";
+    "Check out Soundgoblin — a private soundboard tool. Upload your own SFX, organize them, and play on your device!";
 
   const SHARE_ICONS = {
     facebook:
@@ -1725,14 +1505,6 @@
     }
   });
 
-  stopBtn.addEventListener("click", function () {
-    stopCurrentSound();
-    flashButton(stopBtn);
-    displayEmoji.textContent = "⏹";
-    displayLabel.textContent = "Stopped";
-    displayScreen.classList.remove("is-animating");
-  });
-
   // ---------------------------------------------------------------------------
   // Sound pack bookmark (placeholder)
   // ---------------------------------------------------------------------------
@@ -1815,24 +1587,24 @@
       buildKeypad(activePack);
       updateUtilityActionBtn();
 
-      const label = activePack === "all" ? "All" : chip.textContent.trim();
+      const label = chip.querySelector(".pack-chip-label");
+      const labelText = label ? label.textContent.trim() : activePack;
       const emoji = chip.dataset.emoji || "📑";
-      animateDisplay(emoji, label);
+      animateDisplay(emoji, labelText);
 
-      const count = soundsForPack(activePack).length;
-      const coming = soundsForPack(activePack).filter(function (s) {
-        return s.placeholder;
+      const playable = soundsForPack(activePack).filter(function (s) {
+        return s && s.src && !s.placeholder;
       }).length;
-      if (activePack === "mix") {
-        showToast("Mix — tap Randomize for a new set");
+      if (activePack === "all") {
+        showToast("All — your remote (" + playable + " sounds)");
+      } else if (activePack === "mix") {
+        showToast("Mix — tap Randomize for a new set from your uploads");
       } else if (activePack === "trending") {
         showToast("Trending — counters unlock after 50 plays");
-      } else if (activePack === "all" && customHomeSounds) {
-        showToast("All — your custom home remote (" + count + ")");
-      } else if (coming > 0) {
-        showToast(label + " — " + count + " sounds (" + coming + " soon)");
+      } else if (playable === 0) {
+        showToast(labelText + " is empty — upload while here to fill it");
       } else {
-        showToast(label + " — " + count + " sounds");
+        showToast(labelText + " — " + playable + " sounds");
       }
     });
   });
@@ -1861,14 +1633,7 @@
   }
 
   function shouldPlayIntro() {
-    if (forceIntroFromUrl()) return true;
-    try {
-      const last = Number(localStorage.getItem(INTRO_STORAGE_KEY));
-      if (!Number.isFinite(last) || last <= 0) return true;
-      return Date.now() - last >= INTRO_COOLDOWN_MS;
-    } catch (err) {
-      return true;
-    }
+    return false;
   }
 
   function markIntroPlayed() {
@@ -1883,82 +1648,11 @@
   let introPlayed = false;
 
   function playIntroSound() {
-    if (introPlayed || isMuted) return Promise.resolve(false);
-    if (!shouldPlayIntro()) return Promise.resolve(false);
-
-    if (!introAudio) {
-      introAudio = new Audio(INTRO_SRC);
-      introAudio.preload = "auto";
-      introAudio.setAttribute("playsinline", "");
-      introAudio.load();
-    }
-
-    introAudio.volume = getVolume();
-
-    return introAudio
-      .play()
-      .then(function () {
-        introPlayed = true;
-        currentAudio = introAudio;
-        markIntroPlayed();
-        introAudio.addEventListener("ended", function () {
-          if (currentAudio === introAudio) {
-            currentAudio = null;
-          }
-        });
-        return true;
-      })
-      .catch(function () {
-        return false;
-      });
+    return Promise.resolve(false);
   }
 
   function initIntroSound() {
-    if (!shouldPlayIntro()) return;
-
-    introAudio = new Audio(INTRO_SRC);
-    introAudio.preload = "auto";
-    introAudio.setAttribute("playsinline", "");
-    introAudio.load();
-
-    function stopWaiting() {
-      document.removeEventListener("pointerdown", onUnlock, true);
-      document.removeEventListener("touchstart", onUnlock, true);
-      document.removeEventListener("click", onUnlock, true);
-      document.removeEventListener("keydown", onUnlock, true);
-      window.removeEventListener("load", tryIntro);
-      window.removeEventListener("pageshow", tryIntro);
-      document.removeEventListener("visibilitychange", onVisible);
-    }
-
-    function tryIntro() {
-      return playIntroSound().then(function (played) {
-        if (played) stopWaiting();
-        return played;
-      });
-    }
-
-    function onUnlock() {
-      tryIntro();
-    }
-
-    function onVisible() {
-      if (document.visibilityState === "visible") {
-        tryIntro();
-      }
-    }
-
-    tryIntro();
-    requestAnimationFrame(function () {
-      tryIntro();
-    });
-    window.addEventListener("load", tryIntro);
-    window.addEventListener("pageshow", tryIntro);
-    document.addEventListener("visibilitychange", onVisible);
-    document.addEventListener("pointerdown", onUnlock, true);
-    document.addEventListener("touchstart", onUnlock, true);
-    document.addEventListener("click", onUnlock, true);
-    document.addEventListener("keydown", onUnlock, true);
+    /* upload-only tool — no built-in intro */
   }
 
   // ---------------------------------------------------------------------------
@@ -1966,9 +1660,17 @@
   // ---------------------------------------------------------------------------
   buildPresetSwatches();
   buildDevicePresets();
-  buildKeypad();
   buildShareMenu();
   initIntroSound();
+
+  loadCustomSounds().then(function () {
+    customHomeSounds = loadHomeMix();
+    if (!customHomeSounds || !customHomeSounds.length) {
+      syncHomeFromLibrary();
+    }
+    buildKeypad();
+    updateUtilityActionBtn();
+  });
 
   try {
     const savedDevice = localStorage.getItem(DEVICE_STORAGE_KEY);
@@ -2033,6 +1735,12 @@
     });
 
     allPlayablePool().forEach(function (sound) {
+      if (sound.custom) {
+        bySound[sound.id] = { mine: true };
+        if (!byPack.mine) byPack.mine = {};
+        byPack.mine[sound.id] = true;
+        return;
+      }
       if (bySound[sound.id]) return;
       const labelKey = String(sound.label || "")
         .trim()
@@ -2057,18 +1765,13 @@
 
   function getPickerCategories(index) {
     const cats = [
-      { id: "all", label: "All", emoji: "🎛️" },
+      { id: "all", label: "Library", emoji: "🎛️" },
       { id: "selected", label: "Selected", emoji: "✅" },
+      { id: "mine", label: "Unsorted", emoji: "📥" },
     ];
-    const order = Object.keys(index.packMeta);
-    order.forEach(function (packId) {
-      const ids = index.byPack[packId];
-      if (!ids || !Object.keys(ids).length) return;
-      cats.push(index.packMeta[packId]);
+    ORGANIZER_PACKS.forEach(function (pack) {
+      cats.push({ id: pack.id, label: pack.label, emoji: pack.emoji });
     });
-    if (index.byPack.more && Object.keys(index.byPack.more).length) {
-      cats.push({ id: "more", label: "More", emoji: "✨" });
-    }
     return cats;
   }
 
@@ -2077,6 +1780,16 @@
     if (pickerCategory === "selected") {
       return pool.filter(function (sound) {
         return pickerSelectedIds.indexOf(sound.id) !== -1;
+      });
+    }
+    if (pickerCategory === "mine") {
+      return pool.filter(function (sound) {
+        return !!sound.custom && !sound.category;
+      });
+    }
+    if (isOrganizerPack(pickerCategory)) {
+      return pool.filter(function (sound) {
+        return sound.category === pickerCategory;
       });
     }
     return pool.filter(function (sound) {
@@ -2143,7 +1856,7 @@
     } else {
       if (icon) icon.textContent = "🎛️";
       if (label) label.textContent = "Customize";
-      customizeBtn.setAttribute("aria-label", "Customize home remote");
+      customizeBtn.setAttribute("aria-label", "Customize your remote");
       customizeBtn.setAttribute("aria-controls", "mixPicker");
     }
   }
@@ -2170,10 +1883,13 @@
     if (!pool.length) {
       const empty = document.createElement("p");
       empty.className = "mix-picker-empty";
-      empty.textContent =
-        pickerCategory === "selected"
-          ? "No sounds selected yet"
-          : "No sounds in this category yet";
+      if (pickerCategory === "selected") {
+        empty.textContent = "No sounds selected yet";
+      } else if (pickerCategory === "mine") {
+        empty.textContent = "Upload audio files for this device only";
+      } else {
+        empty.textContent = "No sounds in this category yet";
+      }
       mixPickerGrid.appendChild(empty);
       syncPickerSelectionUI();
       return;
@@ -2193,12 +1909,74 @@
         : sound.emoji;
 
       btn.innerHTML =
+        (sound.custom ? '<span class="mix-pick-badge">Local</span>' : "") +
         '<span class="mix-pick-emoji" aria-hidden="true">' +
         iconHtml +
         "</span>" +
         '<span class="mix-pick-label">' +
         sound.label +
         "</span>";
+
+      if (sound.custom) {
+        const catSelect = document.createElement("select");
+        catSelect.className = "mix-pick-cat";
+        catSelect.setAttribute("aria-label", "Category for " + sound.label);
+        const unset = document.createElement("option");
+        unset.value = "";
+        unset.textContent = "Unsorted";
+        catSelect.appendChild(unset);
+        ORGANIZER_PACKS.forEach(function (pack) {
+          const opt = document.createElement("option");
+          opt.value = pack.id;
+          opt.textContent = pack.label;
+          if (sound.category === pack.id) opt.selected = true;
+          catSelect.appendChild(opt);
+        });
+        if (!sound.category) unset.selected = true;
+        catSelect.addEventListener("click", function (e) {
+          e.stopPropagation();
+        });
+        catSelect.addEventListener("change", function (e) {
+          e.stopPropagation();
+          setCustomSoundCategory(sound.id, catSelect.value)
+            .then(function () {
+              showToast(
+                sound.label +
+                  " → " +
+                  (catSelect.value
+                    ? catSelect.options[catSelect.selectedIndex].text
+                    : "Unsorted")
+              );
+              refreshPickerAfterCustomChange();
+              if (isOrganizerPack(activePack) || activePack === "mine") {
+                buildKeypad(activePack);
+              }
+            })
+            .catch(function () {
+              showToast("Couldn't update category");
+            });
+        });
+        btn.appendChild(catSelect);
+
+        const del = document.createElement("span");
+        del.className = "mix-pick-delete";
+        del.setAttribute("role", "button");
+        del.setAttribute("tabindex", "0");
+        del.setAttribute("aria-label", "Remove " + sound.label);
+        del.textContent = "×";
+        del.addEventListener("click", function (e) {
+          e.stopPropagation();
+          removeCustomSound(sound.id);
+        });
+        del.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            e.stopPropagation();
+            removeCustomSound(sound.id);
+          }
+        });
+        btn.appendChild(del);
+      }
 
       btn.addEventListener("click", function () {
         const idx = pickerSelectedIds.indexOf(sound.id);
@@ -2222,12 +2000,12 @@
     syncPickerSelectionUI();
   }
 
-  function openMixPicker() {
+  function openMixPicker(startCategory) {
     const current = customHomeSounds || [];
     pickerSelectedIds = current.map(function (s) {
       return s.id;
     });
-    pickerCategory = "all";
+    pickerCategory = startCategory || "all";
     const index = buildPickerPackIndex();
     buildPickerCats(index);
     buildPickerGrid(index);
@@ -2271,6 +2049,10 @@
   customizeBtn.addEventListener("click", function (e) {
     e.stopPropagation();
     if (activePack === "mix") {
+      if (!allPlayablePool().length) {
+        showToast("Upload sounds first");
+        return;
+      }
       rerollSessionMix();
       buildKeypad("mix");
       animateDisplay("🎲", "Mix");
@@ -2280,9 +2062,16 @@
     if (mixPicker.classList.contains("is-open")) {
       closeMixPicker();
     } else {
-      openMixPicker();
+      openMixPicker("all");
     }
   });
+
+  if (mineBtn) {
+    mineBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (mineFileInput) mineFileInput.click();
+    });
+  }
 
   mixPickerClose.addEventListener("click", closeMixPicker);
   mixPickerBackdrop.addEventListener("click", closeMixPicker);
@@ -2296,21 +2085,135 @@
     }
   });
 
+  function refreshPickerAfterCustomChange() {
+    const index = buildPickerPackIndex();
+    buildPickerCats(index);
+    buildPickerGrid(index);
+    if (activePack === "all" && customHomeSounds) {
+      customHomeSounds = loadHomeMix();
+      buildKeypad("all");
+    }
+  }
+
+  function removeCustomSound(id) {
+    deleteCustomSoundRecord(id)
+      .then(function () {
+        const existing = findCustomSound(id);
+        revokeCustomSound(existing);
+        customSoundsCache = customSoundsCache.filter(function (s) {
+          return s.id !== id;
+        });
+        pickerSelectedIds = pickerSelectedIds.filter(function (sid) {
+          return sid !== id;
+        });
+        syncHomeFromLibrary();
+        sessionMix = null;
+        refreshPickerAfterCustomChange();
+        buildKeypad(activePack);
+        showToast("Removed local sound");
+      })
+      .catch(function () {
+        showToast("Couldn't remove that sound");
+      });
+  }
+
+  function addCustomFiles(fileList) {
+    const files = Array.prototype.slice.call(fileList || []);
+    if (!files.length) return;
+
+    let remaining = CUSTOM_MAX_COUNT - customSoundsCache.length;
+    if (remaining <= 0) {
+      showToast("Max " + CUSTOM_MAX_COUNT + " local sounds");
+      return;
+    }
+
+    const queue = files.slice(0, remaining);
+    let added = 0;
+
+    function next(i) {
+      if (i >= queue.length) {
+        if (added) {
+          syncHomeFromLibrary();
+          sessionMix = null;
+          buildKeypad(activePack);
+          showToast(
+            "Added " +
+              added +
+              " local sound" +
+              (added === 1 ? "" : "s") +
+              (isOrganizerPack(activePack) ? " to " + activePack : "")
+          );
+          animateDisplay("⬆️", "Uploaded");
+          if (mixPicker.classList.contains("is-open")) {
+            refreshPickerAfterCustomChange();
+          }
+        }
+        return;
+      }
+
+      const file = queue[i];
+      if (!file || (file.type && file.type.indexOf("audio/") !== 0 && !/\.(mp3|m4a|wav|ogg|aac|mpeg)$/i.test(file.name))) {
+        next(i + 1);
+        return;
+      }
+      if (file.size > CUSTOM_MAX_BYTES) {
+        showToast(file.name + " is over 3MB");
+        next(i + 1);
+        return;
+      }
+
+      const record = {
+        id: "custom-" + Date.now() + "-" + Math.floor(Math.random() * 10000),
+        label: labelFromFilename(file.name),
+        emoji: "🎵",
+        mime: file.type || "audio/mpeg",
+        blob: file,
+        createdAt: Date.now(),
+        category: isOrganizerPack(activePack) ? activePack : "",
+      };
+
+      saveCustomSoundRecord(record)
+        .then(function () {
+          customSoundsCache.push(hydrateCustomRecord(record));
+          added += 1;
+          next(i + 1);
+        })
+        .catch(function () {
+          showToast("Couldn't save " + file.name);
+          next(i + 1);
+        });
+    }
+
+    next(0);
+  }
+
+  if (mineFileInput) {
+    mineFileInput.addEventListener("change", function () {
+      addCustomFiles(mineFileInput.files);
+      mineFileInput.value = "";
+    });
+  }
+
   mixPickerDefaults.addEventListener("click", function () {
     clearHomeMix();
     setAllPackActive();
     closeMixPicker();
-    showToast("Home remote reset to All defaults");
-    animateDisplay("🎛️", "All");
+    showToast("Remote cleared — upload sounds to refill");
+    animateDisplay("⬆️", "Empty");
   });
 
   mixPickerSurprise.addEventListener("click", function () {
-    const surprise = shuffleList(allPlayablePool()).slice(0, PACK_SIZE);
+    const pool = allPlayablePool();
+    if (!pool.length) {
+      showToast("Upload sounds first");
+      return;
+    }
+    const surprise = shuffleList(pool).slice(0, PACK_SIZE);
     saveHomeMix(surprise);
     setAllPackActive();
     closeMixPicker();
-    showToast("Surprise remote ready for this session");
-    animateDisplay("🎲", "Custom Mix");
+    showToast("Surprise remote ready");
+    animateDisplay("🎲", "Surprise");
   });
 
   mixPickerSave.addEventListener("click", function () {
@@ -2335,26 +2238,4 @@
   });
 
   updateUtilityActionBtn();
-
-  const copyrightPop = document.getElementById("copyrightPop");
-  const copyrightPopClose = document.getElementById("copyrightPopClose");
-
-  function hideCopyrightPop() {
-    copyrightPop.classList.remove("is-open");
-    copyrightPop.addEventListener(
-      "transitionend",
-      function onEnd() {
-        copyrightPop.hidden = true;
-        copyrightPop.removeEventListener("transitionend", onEnd);
-      },
-      { once: true }
-    );
-  }
-
-  copyrightPopClose.addEventListener("click", hideCopyrightPop);
-
-  copyrightPop.hidden = false;
-  setTimeout(function () {
-    copyrightPop.classList.add("is-open");
-  }, 500);
 })();
