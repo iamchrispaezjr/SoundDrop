@@ -115,7 +115,7 @@
   ];
   const CUSTOM_CATS_KEY = "noisegoblin-custom-categories";
   const CUSTOM_CATS_MAX = 12;
-  const VISIBLE_PACKS_KEY = "noisegoblin-visible-packs";
+  const VISIBLE_PACKS_KEY = "noisegoblin-visible-packs-v2";
   const PINNED_PACKS = ["all", "mix", "trending"];
   let packRemoveMode = false;
 
@@ -135,9 +135,7 @@
     } catch (err) {
       /* ignore */
     }
-    return ORGANIZER_PACKS.map(function (p) {
-      return p.id;
-    });
+    return [];
   }
 
   function saveVisiblePackIds(ids) {
@@ -2391,7 +2389,7 @@
     closePackAddMenu();
     setPackRemoveMode(false);
 
-    let selectedEmoji = "🎵";
+    let selectedEmoji = "";
 
     const backdrop = document.createElement("div");
     backdrop.id = "packAddBackdrop";
@@ -2460,11 +2458,18 @@
     const actions = document.createElement("div");
     actions.className = "pack-add-popout-actions";
 
-    const emojiPickBtn = document.createElement("button");
-    emojiPickBtn.type = "button";
-    emojiPickBtn.className = "pack-add-emoji-pick";
-    emojiPickBtn.setAttribute("aria-label", "Selected category emoji");
-    emojiPickBtn.textContent = selectedEmoji;
+    const emojiInput = document.createElement("input");
+    emojiInput.type = "text";
+    emojiInput.id = "packAddEmojiInput";
+    emojiInput.className = "pack-add-emoji-pick";
+    emojiInput.maxLength = 8;
+    emojiInput.value = "";
+    emojiInput.placeholder = "😀";
+    emojiInput.autocomplete = "off";
+    emojiInput.spellcheck = false;
+    emojiInput.enterKeyHint = "done";
+    emojiInput.setAttribute("aria-label", "Type or paste a category emoji");
+    emojiInput.title = "Type or paste an emoji";
 
     const createBtn = document.createElement("button");
     createBtn.type = "button";
@@ -2472,12 +2477,22 @@
     createBtn.textContent = "Create";
 
     function syncEmojiSelection() {
-      emojiPickBtn.textContent = selectedEmoji;
+      emojiInput.value = selectedEmoji || "";
       emojiGrid.querySelectorAll(".pack-add-emoji-opt").forEach(function (btn) {
-        const on = btn.dataset.emoji === selectedEmoji;
+        const on = !!selectedEmoji && btn.dataset.emoji === selectedEmoji;
         btn.classList.toggle("is-selected", on);
         btn.setAttribute("aria-selected", on ? "true" : "false");
       });
+    }
+
+    function readTypedEmoji() {
+      const picked = firstGrapheme(emojiInput.value);
+      if (picked) {
+        selectedEmoji = picked;
+        syncEmojiSelection();
+        return picked;
+      }
+      return selectedEmoji || "📁";
     }
 
     CATEGORY_EMOJI_CHOICES.forEach(function (emoji) {
@@ -2492,6 +2507,7 @@
         e.stopPropagation();
         selectedEmoji = emoji;
         syncEmojiSelection();
+        emojiInput.focus();
       });
       emojiGrid.appendChild(opt);
     });
@@ -2503,16 +2519,31 @@
         input.focus();
         return;
       }
-      createCategoryFromLabel(typed, selectedEmoji);
+      createCategoryFromLabel(typed, readTypedEmoji());
     }
 
     createBtn.addEventListener("click", function (e) {
       e.stopPropagation();
       submit();
     });
-    emojiPickBtn.addEventListener("click", function (e) {
+    emojiInput.addEventListener("click", function (e) {
       e.stopPropagation();
-      emojiGrid.scrollIntoView({ block: "nearest" });
+    });
+    emojiInput.addEventListener("input", function () {
+      const picked = firstGrapheme(emojiInput.value);
+      selectedEmoji = picked || "";
+      emojiGrid.querySelectorAll(".pack-add-emoji-opt").forEach(function (btn) {
+        const on = !!selectedEmoji && btn.dataset.emoji === selectedEmoji;
+        btn.classList.toggle("is-selected", on);
+        btn.setAttribute("aria-selected", on ? "true" : "false");
+      });
+    });
+    emojiInput.addEventListener("keydown", function (e) {
+      e.stopPropagation();
+      if (e.key === "Enter") {
+        e.preventDefault();
+        submit();
+      }
     });
     input.addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
@@ -2525,7 +2556,7 @@
       }
     });
 
-    actions.appendChild(emojiPickBtn);
+    actions.appendChild(emojiInput);
     actions.appendChild(createBtn);
 
     body.appendChild(label);

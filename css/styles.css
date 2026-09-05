@@ -1735,18 +1735,27 @@ body.is-keypad-dragging .keypad {
 
 .pack-add-emoji-pick {
   flex-shrink: 0;
+  box-sizing: border-box;
   width: 48px;
   height: 48px;
+  padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.06);
+  color: var(--btn-text);
   font-size: 1.45rem;
   line-height: 1;
-  cursor: pointer;
+  text-align: center;
+  outline: none;
 }
 
-.pack-add-emoji-pick:hover {
+.pack-add-emoji-pick:hover,
+.pack-add-emoji-pick:focus {
   border-color: rgba(91, 140, 255, 0.45);
+}
+
+.pack-add-emoji-pick::placeholder {
+  opacity: 0.35;
 }
 
 .pack-add-menu-create {
