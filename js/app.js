@@ -2793,4 +2793,45 @@
   });
 
   updateUtilityActionBtn();
+
+  // ---------------------------------------------------------------------------
+  // Welcome announcement
+  // ---------------------------------------------------------------------------
+  const WELCOME_SESSION_KEY = "noisegoblin-welcome-dismissed";
+  const welcomePop = document.getElementById("welcomePop");
+  const welcomePopClose = document.getElementById("welcomePopClose");
+
+  function hideWelcomePop() {
+    if (!welcomePop) return;
+    try {
+      sessionStorage.setItem(WELCOME_SESSION_KEY, "1");
+    } catch (err) {
+      /* ignore */
+    }
+    welcomePop.classList.remove("is-open");
+    welcomePop.addEventListener(
+      "transitionend",
+      function onEnd() {
+        welcomePop.hidden = true;
+        welcomePop.removeEventListener("transitionend", onEnd);
+      },
+      { once: true }
+    );
+  }
+
+  if (welcomePop && welcomePopClose) {
+    welcomePopClose.addEventListener("click", hideWelcomePop);
+    let dismissed = false;
+    try {
+      dismissed = sessionStorage.getItem(WELCOME_SESSION_KEY) === "1";
+    } catch (err) {
+      dismissed = false;
+    }
+    if (!dismissed) {
+      welcomePop.hidden = false;
+      setTimeout(function () {
+        welcomePop.classList.add("is-open");
+      }, 500);
+    }
+  }
 })();
