@@ -252,6 +252,7 @@
     </button>
     <p class="welcome-pop-kicker">Welcome</p>
     <p>Hey — thanks for stopping by. Upload your own SFX (up to 50, 3MB each), set emojis or photos on each button, sort them into packs, and play on a 17-button remote that stays on this device.</p>
+    <p>Tap the board title or a sound’s green display name to rename them. Use ✏️ on a button to change its look.</p>
     <p>If you like it, consider <a href="https://www.paypal.com/donate/?hosted_button_id=XRLVQFNNNTMAG" target="_blank" rel="noopener noreferrer">donating</a> — it helps keep tools like this going.</p>
     <p>No login needed. Just a simple soundboard for your sounds.</p>
   </aside>
@@ -312,8 +313,25 @@
         </div>
 
         <div class="device-brand">
-          <span class="brand-dot"></span>
-          <span class="brand-text">SFX REMOTE</span>
+          <span class="brand-dot" aria-hidden="true"></span>
+          <button
+            class="brand-text"
+            id="brandTextBtn"
+            type="button"
+            title="Click to rename your soundboard"
+            aria-label="Soundboard name, click to edit"
+          >SFX REMOTE</button>
+          <span class="edit-cta-chip" id="brandEditChip" aria-hidden="true">✏️ rename</span>
+          <input
+            class="brand-text-input"
+            id="brandTextInput"
+            type="text"
+            maxlength="22"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Edit soundboard name"
+            hidden
+          >
         </div>
 
         <div class="share-wrapper">
@@ -344,10 +362,31 @@
         <div class="display-bezel">
           <div class="display-screen" id="displayScreen">
             <span class="display-emoji" id="displayEmoji" role="img" aria-label="Upload">⬆️</span>
-            <span class="display-label" id="displayLabel">Upload</span>
+            <button
+              class="display-label"
+              id="displayLabel"
+              type="button"
+              title="Play a sound, then click here to rename it"
+            >Upload</button>
+            <input
+              class="display-label-input"
+              id="displayLabelInput"
+              type="text"
+              maxlength="18"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Edit sound name"
+              hidden
+            >
+            <p class="display-edit-cta" id="displayEditCta" hidden>Tap title to rename</p>
           </div>
         </div>
       </section>
+
+      <p class="edit-tip" id="editTip" hidden>
+        <span class="edit-tip-text">Titles are editable — tap <strong>SFX REMOTE</strong> or a sound name in the green display. ✏️ changes looks.</span>
+        <button class="edit-tip-btn" id="editTipClose" type="button">Got it</button>
+      </p>
 
       <section class="keypad" id="keypad" aria-label="Sound effects"></section>
       <p class="keypad-hint" id="keypadHint" hidden>Drag buttons to rearrange</p>

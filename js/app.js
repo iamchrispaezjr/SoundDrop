@@ -490,6 +490,20 @@
     });
   }
 
+  function setCustomSoundLabel(id, label) {
+    const sound = findCustomSound(id);
+    const next = String(label || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 18);
+    if (!sound || !next) return Promise.resolve(null);
+    sound.label = next;
+    return persistCustomSound(sound).then(function () {
+      refreshStoredCustomCopies(id);
+      return sound;
+    });
+  }
+
   function setCustomSoundIcon(id, dataUrl) {
     const sound = findCustomSound(id);
     if (!sound || !dataUrl) return Promise.resolve(null);
@@ -880,6 +894,30 @@
   const displayScreen = document.getElementById("displayScreen");
   const displayEmoji = document.getElementById("displayEmoji");
   const displayLabel = document.getElementById("displayLabel");
+  const displayLabelInput = document.getElementById("displayLabelInput");
+  const brandTextBtn = document.getElementById("brandTextBtn");
+  const brandTextInput = document.getElementById("brandTextInput");
+  let displaySoundId = null;
+  let editTipsAreDismissed = false;
+  const EDIT_TIP_KEY = "noisegoblin-edit-tip-dismissed";
+
+  function dismissEditTips() {
+    editTipsAreDismissed = true;
+    const editTip = document.getElementById("editTip");
+    const brandEditChip = document.getElementById("brandEditChip");
+    const displayEditCta = document.getElementById("displayEditCta");
+    if (editTip) editTip.hidden = true;
+    if (brandEditChip) {
+      brandEditChip.classList.remove("is-visible");
+      brandEditChip.hidden = true;
+    }
+    if (displayEditCta) displayEditCta.hidden = true;
+    try {
+      localStorage.setItem(EDIT_TIP_KEY, "1");
+    } catch (err) {
+      /* ignore */
+    }
+  }
   const shareToggle = document.getElementById("shareToggle");
   const shareDropdown = document.getElementById("shareDropdown");
   const shareList = document.getElementById("shareList");
@@ -1449,7 +1487,109 @@
     });
   }
 
-  function animateDisplay(emoji, label, iconSrc) {
+  function syncDisplayLabelEditable() {
+    if (!displayLabel) return;
+    const canEdit = !!displaySoundId && !!findCustomSound(displaySoundId);
+    displayLabel.classList.toggle("is-editable", canEdit);
+    displayLabel.title = canEdit
+      ? "Click to rename this sound"
+      : "Play a sound, then click here to rename it";
+    displayLabel.setAttribute(
+      "aria-label",
+      canEdit
+        ? "Sound name " + (displayLabel.textContent || "") + ", click to rename"
+        : displayLabel.textContent || "Display"
+    );
+    const displayEditCta = document.getElementById("displayEditCta");
+    if (displayEditCta) {
+      displayEditCta.hidden = !canEdit || editTipsAreDismissed;
+    }
+  }
+
+  function closeDisplayNameEdit(save) {
+    if (!displayLabel || !displayLabelInput || displayLabelInput.hidden) return;
+    const editingId = displaySoundId;
+    if (save && editingId) {
+      const next = String(displayLabelInput.value || "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 18);
+      if (!next) {
+        showToast("Type a sound name first");
+        displayLabelInput.focus();
+        return;
+      }
+      setCustomSoundLabel(editingId, next)
+        .then(function (sound) {
+          if (!sound) return;
+          displayLabel.textContent = sound.label;
+          displayEmoji.setAttribute("aria-label", sound.label);
+          buildKeypad(activePack);
+          showToast('Renamed "' + sound.label + '"');
+          dismissEditTips();
+          syncDisplayLabelEditable();
+        })
+        .catch(function () {
+          showToast("Couldn't rename sound");
+        });
+    }
+    displayLabelInput.hidden = true;
+    displayLabel.hidden = false;
+    if (save) {
+      /* keep focus soft */
+    } else {
+      displayLabel.focus();
+    }
+  }
+
+  function openDisplayNameEdit() {
+    if (!displayLabel || !displayLabelInput || !displaySoundId) return;
+    const sound = findCustomSound(displaySoundId);
+    if (!sound) {
+      showToast("Play one of your sounds first");
+      return;
+    }
+    const displayEditCta = document.getElementById("displayEditCta");
+    if (displayEditCta) displayEditCta.hidden = true;
+    displayLabelInput.value = sound.label || "";
+    displayLabel.hidden = true;
+    displayLabelInput.hidden = false;
+    displayLabelInput.focus();
+    displayLabelInput.select();
+  }
+
+  function initDisplayNameEdit() {
+    if (!displayLabel || !displayLabelInput) return;
+    syncDisplayLabelEditable();
+
+    displayLabel.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (!displaySoundId) {
+        showToast("Play a sound first, then tap the title to rename");
+        return;
+      }
+      openDisplayNameEdit();
+    });
+
+    displayLabelInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        closeDisplayNameEdit(true);
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        closeDisplayNameEdit(false);
+      }
+    });
+
+    displayLabelInput.addEventListener("blur", function () {
+      closeDisplayNameEdit(true);
+    });
+  }
+
+  function animateDisplay(emoji, label, iconSrc, soundRef) {
+    if (displayLabelInput && !displayLabelInput.hidden) {
+      closeDisplayNameEdit(false);
+    }
     if (iconSrc) {
       displayEmoji.innerHTML =
         '<img class="display-emoji-img" src="' +
@@ -1460,6 +1600,13 @@
     }
     displayEmoji.setAttribute("aria-label", label);
     displayLabel.textContent = label;
+
+    if (soundRef && soundRef.custom && soundRef.id && soundRef.src) {
+      displaySoundId = soundRef.id;
+    } else if (soundRef === null) {
+      displaySoundId = null;
+    }
+    syncDisplayLabelEditable();
 
     displayScreen.classList.remove("is-animating");
     void displayScreen.offsetWidth;
@@ -1482,7 +1629,7 @@
     flashButton(btn);
     const play = playableSound(sound) || sound;
     if (play.uploadSlot || (play.placeholder && !play.src)) {
-      animateDisplay("⬆️", "Upload");
+      animateDisplay("⬆️", "Upload", null, null);
       if (mineFileInput) mineFileInput.click();
       return;
     }
@@ -1490,7 +1637,7 @@
       showToast((play.label || "Sound") + " — empty slot");
       return;
     }
-    animateDisplay(play.emoji, play.label, play.icon);
+    animateDisplay(play.emoji, play.label, play.icon, play);
     playSound(play);
 
     const plays = recordPlay(play.id);
@@ -1641,10 +1788,27 @@
   }
 
   const keypadHint = document.getElementById("keypadHint");
+  const KEYPAD_HINT_KEY = "noisegoblin-keypad-hint-dismissed";
+  let keypadHintDismissed = false;
+  try {
+    keypadHintDismissed = localStorage.getItem(KEYPAD_HINT_KEY) === "1";
+  } catch (err) {
+    keypadHintDismissed = false;
+  }
+
+  function dismissKeypadHint() {
+    keypadHintDismissed = true;
+    if (keypadHint) keypadHint.hidden = true;
+    try {
+      localStorage.setItem(KEYPAD_HINT_KEY, "1");
+    } catch (err) {
+      /* ignore */
+    }
+  }
 
   function updateKeypadHint(pack, count) {
     if (!keypadHint) return;
-    const show = pack !== "mix" && count > 1;
+    const show = !keypadHintDismissed && pack !== "mix" && count > 1;
     keypadHint.hidden = !show;
   }
 
@@ -1704,6 +1868,7 @@
     const moved = current.splice(from, 1)[0];
     current.splice(to, 0, moved);
     persistKeypadOrder(pack, current);
+    dismissKeypadHint();
     buildKeypad(pack);
     keypadEl.querySelectorAll(".sound-btn").forEach(function (btn) {
       btn.classList.add("is-snapping");
@@ -2134,7 +2299,7 @@
     const label = chip && chip.querySelector(".pack-chip-label");
     const labelText = label ? label.textContent.trim() : next;
     const emoji = (chip && chip.dataset.emoji) || "📑";
-    animateDisplay(emoji, labelText);
+    animateDisplay(emoji, labelText, null, null);
 
     const playable = soundsForPack(activePack).filter(function (s) {
       return s && s.src && !s.placeholder;
@@ -2597,10 +2762,138 @@
   // ---------------------------------------------------------------------------
   // Init
   // ---------------------------------------------------------------------------
+  const BOARD_NAME_KEY = "noisegoblin-board-name";
+  const BOARD_NAME_DEFAULT = "SFX REMOTE";
+  const BOARD_NAME_MAX = 22;
+
+  function normalizeBoardName(value) {
+    const cleaned = String(value || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, BOARD_NAME_MAX);
+    return cleaned || BOARD_NAME_DEFAULT;
+  }
+
+  function loadBoardName() {
+    try {
+      const raw = localStorage.getItem(BOARD_NAME_KEY);
+      if (raw == null || !String(raw).trim()) return BOARD_NAME_DEFAULT;
+      return normalizeBoardName(raw);
+    } catch (err) {
+      return BOARD_NAME_DEFAULT;
+    }
+  }
+
+  function saveBoardName(name) {
+    try {
+      localStorage.setItem(BOARD_NAME_KEY, name);
+    } catch (err) {
+      /* ignore */
+    }
+  }
+
+  function renderBoardName(name) {
+    if (!brandTextBtn) return;
+    brandTextBtn.textContent = name;
+    brandTextBtn.setAttribute(
+      "aria-label",
+      "Soundboard name " + name + ", click to edit"
+    );
+    if (sfxDevice) {
+      sfxDevice.setAttribute("aria-label", name + " soundboard remote");
+    }
+  }
+
+  function closeBoardNameEdit(save) {
+    if (!brandTextBtn || !brandTextInput || brandTextInput.hidden) return;
+    if (save) {
+      const next = normalizeBoardName(brandTextInput.value).toUpperCase();
+      const prev = brandTextBtn.textContent || BOARD_NAME_DEFAULT;
+      saveBoardName(next);
+      renderBoardName(next);
+      if (next !== prev) {
+        showToast('Board renamed "' + next + '"');
+        dismissEditTips();
+      }
+    }
+    brandTextInput.hidden = true;
+    brandTextBtn.hidden = false;
+    brandTextBtn.focus();
+  }
+
+  function openBoardNameEdit() {
+    if (!brandTextBtn || !brandTextInput) return;
+    brandTextInput.value = brandTextBtn.textContent || BOARD_NAME_DEFAULT;
+    brandTextBtn.hidden = true;
+    brandTextInput.hidden = false;
+    brandTextInput.focus();
+    brandTextInput.select();
+  }
+
+  function initBoardName() {
+    renderBoardName(loadBoardName());
+    if (!brandTextBtn || !brandTextInput) return;
+
+    brandTextBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      openBoardNameEdit();
+    });
+
+    brandTextInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        closeBoardNameEdit(true);
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        closeBoardNameEdit(false);
+      }
+    });
+
+    brandTextInput.addEventListener("blur", function () {
+      closeBoardNameEdit(true);
+    });
+  }
+
+  function initEditTips() {
+    const editTip = document.getElementById("editTip");
+    const editTipClose = document.getElementById("editTipClose");
+    const brandEditChip = document.getElementById("brandEditChip");
+    try {
+      editTipsAreDismissed = localStorage.getItem(EDIT_TIP_KEY) === "1";
+    } catch (err) {
+      editTipsAreDismissed = false;
+    }
+
+    if (editTipsAreDismissed) {
+      if (editTip) editTip.hidden = true;
+      if (brandEditChip) brandEditChip.hidden = true;
+      return;
+    }
+
+    if (editTip) {
+      editTip.hidden = false;
+    }
+    if (brandEditChip) {
+      brandEditChip.hidden = false;
+      requestAnimationFrame(function () {
+        brandEditChip.classList.add("is-visible");
+      });
+    }
+    if (editTipClose) {
+      editTipClose.addEventListener("click", function (e) {
+        e.stopPropagation();
+        dismissEditTips();
+      });
+    }
+  }
+
   buildPresetSwatches();
   buildDevicePresets();
   buildShareMenu();
   initIntroSound();
+  initBoardName();
+  initDisplayNameEdit();
+  initEditTips();
 
   loadCustomSounds().then(function () {
     customHomeSounds = loadHomeMix();
@@ -2661,7 +2954,7 @@
         showToast(sound.label + " → " + picked);
         closeEmojiPicker();
         buildKeypad(activePack);
-        animateDisplay(picked, sound.label);
+        animateDisplay(picked, sound.label, null, sound);
       })
       .catch(function () {
         showToast("Couldn't update emoji");
@@ -2713,7 +3006,7 @@
     rerollSessionMix();
     buildKeypad("mix");
     showToast("New mix from your uploads");
-    animateDisplay("🎲", "Mix");
+    animateDisplay("🎲", "Mix", null, null);
   });
 
   if (mineBtn) {
@@ -2782,7 +3075,7 @@
           showToast(sound.label + " photo set");
           closeEmojiPicker();
           buildKeypad(activePack);
-          animateDisplay(sound.emoji || "🎵", sound.label, dataUrl);
+          animateDisplay(sound.emoji || "🎵", sound.label, dataUrl, sound);
         })
         .catch(function (err) {
           if (err && err.message === "Photo too large") {
@@ -2805,7 +3098,7 @@
           showToast(sound.label + " look reset");
           closeEmojiPicker();
           buildKeypad(activePack);
-          animateDisplay(nextEmoji, sound.label);
+          animateDisplay(nextEmoji, sound.label, null, sound);
         })
         .catch(function () {
           showToast("Couldn't reset look");
@@ -2877,7 +3170,7 @@
               (added === 1 ? "" : "s") +
               (isOrganizerPack(activePack) ? " to " + activePack : "")
           );
-          animateDisplay("⬆️", "Uploaded");
+          animateDisplay("⬆️", "Uploaded", null, null);
         }
         return;
       }
