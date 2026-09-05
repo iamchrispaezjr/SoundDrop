@@ -1974,9 +1974,9 @@
   // ---------------------------------------------------------------------------
   // Share menu
   // ---------------------------------------------------------------------------
-  const SHARE_TITLE = "Check out Soundgoblin";
+  const SHARE_TITLE = "Check out Noisegoblin";
   const SHARE_MESSAGE =
-    "Check out Soundgoblin — a private soundboard tool. Upload your own SFX, organize them, and play on your device!";
+    "Check out Noisegoblin — a private soundboard tool. Upload your own SFX, organize them, and play on your device!";
 
   const SHARE_ICONS = {
     facebook:
