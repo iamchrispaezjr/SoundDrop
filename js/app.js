@@ -898,20 +898,31 @@
   const brandTextBtn = document.getElementById("brandTextBtn");
   const brandTextInput = document.getElementById("brandTextInput");
   let displaySoundId = null;
-  let editTipsAreDismissed = false;
-  const EDIT_TIP_KEY = "noisegoblin-edit-tip-dismissed";
+  let brandRenameTipDismissed = false;
+  let displayRenameTipDismissed = false;
+  const BRAND_RENAME_TIP_KEY = "noisegoblin-brand-rename-tip-dismissed";
+  const DISPLAY_RENAME_TIP_KEY = "noisegoblin-display-rename-tip-dismissed";
 
-  function dismissEditTips() {
-    editTipsAreDismissed = true;
+  function dismissBrandRenameTip() {
+    brandRenameTipDismissed = true;
     const brandEditChip = document.getElementById("brandEditChip");
-    const displayEditCta = document.getElementById("displayEditCta");
     if (brandEditChip) {
       brandEditChip.classList.remove("is-visible");
       brandEditChip.hidden = true;
     }
+    try {
+      localStorage.setItem(BRAND_RENAME_TIP_KEY, "1");
+    } catch (err) {
+      /* ignore */
+    }
+  }
+
+  function dismissDisplayRenameTip() {
+    displayRenameTipDismissed = true;
+    const displayEditCta = document.getElementById("displayEditCta");
     if (displayEditCta) displayEditCta.hidden = true;
     try {
-      localStorage.setItem(EDIT_TIP_KEY, "1");
+      localStorage.setItem(DISPLAY_RENAME_TIP_KEY, "1");
     } catch (err) {
       /* ignore */
     }
@@ -1500,7 +1511,7 @@
     );
     const displayEditCta = document.getElementById("displayEditCta");
     if (displayEditCta) {
-      displayEditCta.hidden = !canEdit || editTipsAreDismissed;
+      displayEditCta.hidden = !canEdit || displayRenameTipDismissed;
     }
   }
 
@@ -1524,7 +1535,7 @@
           displayEmoji.setAttribute("aria-label", sound.label);
           buildKeypad(activePack);
           showToast('Renamed "' + sound.label + '"');
-          dismissEditTips();
+          dismissDisplayRenameTip();
           syncDisplayLabelEditable();
         })
         .catch(function () {
@@ -2811,7 +2822,7 @@
       renderBoardName(next);
       if (next !== prev) {
         showToast('Board renamed "' + next + '"');
-        dismissEditTips();
+        dismissBrandRenameTip();
       }
     }
     brandTextInput.hidden = true;
@@ -2855,12 +2866,16 @@
   function initEditTips() {
     const brandEditChip = document.getElementById("brandEditChip");
     try {
-      editTipsAreDismissed = localStorage.getItem(EDIT_TIP_KEY) === "1";
+      brandRenameTipDismissed =
+        localStorage.getItem(BRAND_RENAME_TIP_KEY) === "1";
+      displayRenameTipDismissed =
+        localStorage.getItem(DISPLAY_RENAME_TIP_KEY) === "1";
     } catch (err) {
-      editTipsAreDismissed = false;
+      brandRenameTipDismissed = false;
+      displayRenameTipDismissed = false;
     }
 
-    if (editTipsAreDismissed) {
+    if (brandRenameTipDismissed) {
       if (brandEditChip) brandEditChip.hidden = true;
       return;
     }
