@@ -251,7 +251,7 @@
       <span aria-hidden="true">&times;</span>
     </button>
     <p class="welcome-pop-kicker">Welcome</p>
-    <p>Hey — thanks for stopping by. Upload your own SFX (up to 50, 3MB each), set emojis, sort them into packs, and build a 17-button remote that stays on this device.</p>
+    <p>Hey — thanks for stopping by. Upload your own SFX (up to 50, 3MB each), set emojis or photos on each button, sort them into packs, and play on a 17-button remote that stays on this device.</p>
     <p>If you like it, consider <a href="https://www.paypal.com/donate/?hosted_button_id=XRLVQFNNNTMAG" target="_blank" rel="noopener noreferrer">donating</a> — it helps keep tools like this going.</p>
     <p>No login needed. Just a simple soundboard for your sounds.</p>
   </aside>
@@ -272,84 +272,20 @@
         </button>
 
         <div class="pack-tray" id="packTray" hidden>
-          <p class="pack-tray-kicker">Sound packs</p>
-          <p class="pack-tray-note">Tap a pack to load its sounds</p>
-          <div class="pack-list" role="list">
-            <button class="pack-chip is-active" type="button" data-pack="all" data-emoji="🎛️">
+          <p class="pack-tray-kicker">Categories</p>
+          <p class="pack-tray-note">Add your own packs · Remove to delete · Tap to play</p>
+          <div class="pack-list" id="packList" role="list">
+            <button class="pack-chip is-active" type="button" data-pack="all" data-emoji="🎛️" data-pinned="1">
               <span class="pack-chip-emoji" aria-hidden="true">🎛️</span>
               <span class="pack-chip-label">All</span>
             </button>
-            <button class="pack-chip" type="button" data-pack="mix" data-emoji="🎲">
+            <button class="pack-chip" type="button" data-pack="mix" data-emoji="🎲" data-pinned="1">
               <span class="pack-chip-emoji" aria-hidden="true">🎲</span>
               <span class="pack-chip-label">Mix</span>
             </button>
-            <button class="pack-chip" type="button" data-pack="trending" data-emoji="🔥">
+            <button class="pack-chip" type="button" data-pack="trending" data-emoji="🔥" data-pinned="1">
               <span class="pack-chip-emoji" aria-hidden="true">🔥</span>
               <span class="pack-chip-label">Trending</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="laughs" data-emoji="😂">
-              <span class="pack-chip-emoji" aria-hidden="true">😂</span>
-              <span class="pack-chip-label">Laughs</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="memes" data-emoji="📱">
-              <span class="pack-chip-emoji" aria-hidden="true">📱</span>
-              <span class="pack-chip-label">Memes</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="reactions" data-emoji="👏">
-              <span class="pack-chip-emoji" aria-hidden="true">👏</span>
-              <span class="pack-chip-label">Reactions</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="funny" data-emoji="🤪">
-              <span class="pack-chip-emoji" aria-hidden="true">🤪</span>
-              <span class="pack-chip-label">Funny</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="stings" data-emoji="🎼">
-              <span class="pack-chip-emoji" aria-hidden="true">🎼</span>
-              <span class="pack-chip-label">Stings</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="scifi" data-emoji="🛸">
-              <span class="pack-chip-emoji" aria-hidden="true">🛸</span>
-              <span class="pack-chip-label">Sci-Fi</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="animals" data-emoji="🐶">
-              <span class="pack-chip-emoji" aria-hidden="true">🐶</span>
-              <span class="pack-chip-label">Animals</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="party" data-emoji="🎉">
-              <span class="pack-chip-emoji" aria-hidden="true">🎉</span>
-              <span class="pack-chip-label">Party</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="horror" data-emoji="👻">
-              <span class="pack-chip-emoji" aria-hidden="true">👻</span>
-              <span class="pack-chip-label">Horror</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="games" data-emoji="🎮">
-              <span class="pack-chip-emoji" aria-hidden="true">🎮</span>
-              <span class="pack-chip-label">Games</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="nature" data-emoji="🌿">
-              <span class="pack-chip-emoji" aria-hidden="true">🌿</span>
-              <span class="pack-chip-label">Nature</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="cartoons" data-emoji="📺">
-              <span class="pack-chip-emoji" aria-hidden="true">📺</span>
-              <span class="pack-chip-label">Cartoons</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="alerts" data-emoji="🔔">
-              <span class="pack-chip-emoji" aria-hidden="true">🔔</span>
-              <span class="pack-chip-label">Alerts</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="vehicles" data-emoji="🚗">
-              <span class="pack-chip-emoji" aria-hidden="true">🚗</span>
-              <span class="pack-chip-label">Vehicles</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="fantasy" data-emoji="🧙">
-              <span class="pack-chip-emoji" aria-hidden="true">🧙</span>
-              <span class="pack-chip-label">Fantasy</span>
-            </button>
-            <button class="pack-chip" type="button" data-pack="retro" data-emoji="🕹️">
-              <span class="pack-chip-emoji" aria-hidden="true">🕹️</span>
-              <span class="pack-chip-label">Retro</span>
             </button>
           </div>
         </div>
@@ -436,12 +372,10 @@
           class="utility-btn"
           id="customizeBtn"
           type="button"
-          aria-label="Customize home remote"
-          aria-expanded="false"
-          aria-controls="mixPicker"
+          aria-label="Randomize Mix sounds"
         >
-          <span class="utility-icon" aria-hidden="true">🎛️</span>
-          <span class="utility-label">Customize</span>
+          <span class="utility-icon" aria-hidden="true">🎲</span>
+          <span class="utility-label">Randomize</span>
         </button>
         <button
           class="utility-btn"
@@ -455,7 +389,7 @@
         <input
           type="file"
           id="mineFileInput"
-          class="mix-picker-file-input"
+          class="file-input-hidden"
           accept="audio/*,.mp3,.m4a,.wav,.ogg,.aac,.mpeg"
           multiple
           hidden
@@ -500,94 +434,50 @@
     
 </nav>
 
-  <div class="mix-picker-backdrop" id="mixPickerBackdrop" hidden></div>
-  <aside
-    class="mix-picker"
-    id="mixPicker"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="mixPickerTitle"
-    hidden
-  >
-    <header class="mix-picker-header">
-      <div>
-        <h2 class="mix-picker-title" id="mixPickerTitle">Build Your Remote</h2>
-        <p class="mix-picker-note">Upload up to 50 sounds (3MB each), set emoji/photo, and pick 17 for your remote</p>
-      </div>
-      <button class="mix-picker-close" id="mixPickerClose" type="button" aria-label="Close customize panel">
+  <div class="look-picker-backdrop" id="lookPickerBackdrop" hidden></div>
+  <div class="mix-emoji-picker" id="mixEmojiPicker" hidden>
+    <div class="mix-emoji-picker-head">
+      <p class="mix-emoji-picker-title" id="mixEmojiPickerTitle">Set button look</p>
+      <button class="mix-emoji-picker-close" id="mixEmojiPickerClose" type="button" aria-label="Close look picker">
         <span aria-hidden="true">&times;</span>
       </button>
-    </header>
-
-    <div class="mix-picker-toolbar">
-      <span class="mix-picker-count" id="mixPickerCount">0 / 17</span>
-      <button class="mix-picker-clear" id="mixPickerClear" type="button">Clear</button>
     </div>
-
-    <p class="mix-picker-local-note" id="mixPickerLocalNote">
-      Limit: 50 sounds · 3MB each · stays on this device
-    </p>
-
-    <div
-      class="mix-picker-cats"
-      id="mixPickerCats"
-      role="tablist"
-      aria-label="Filter by category"
-    ></div>
-
-    <div class="mix-picker-grid" id="mixPickerGrid" role="group" aria-label="Available sounds"></div>
-
-    <div class="mix-emoji-picker" id="mixEmojiPicker" hidden>
-      <div class="mix-emoji-picker-head">
-        <p class="mix-emoji-picker-title" id="mixEmojiPickerTitle">Button look</p>
-        <button class="mix-emoji-picker-close" id="mixEmojiPickerClose" type="button" aria-label="Close look picker">
-          <span aria-hidden="true">&times;</span>
-        </button>
+    <div class="mix-emoji-picker-body">
+      <div class="mix-emoji-preview" id="mixEmojiPreview" aria-hidden="true">🎵</div>
+      <label class="mix-emoji-field">
+        <span class="mix-emoji-field-label">Type or paste an emoji here</span>
+        <input
+          class="mix-emoji-input"
+          id="mixEmojiInput"
+          type="text"
+          maxlength="16"
+          enterkeyhint="done"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Your emoji"
+          placeholder="😀"
+        >
+      </label>
+      <button class="mix-emoji-apply" id="mixEmojiApply" type="button">Use emoji</button>
+      <p class="mix-emoji-hint">Emoji is recommended — it stays tiny under the 50-sound / 3MB limits</p>
+      <div class="mix-emoji-photo-row">
+        <button class="mix-emoji-photo-btn" id="mixEmojiPhotoBtn" type="button">Optional: tiny photo</button>
+        <input
+          class="file-input-hidden"
+          id="mixEmojiPhotoInput"
+          type="file"
+          accept="image/*"
+          hidden
+        >
       </div>
-      <div class="mix-emoji-picker-body">
-        <div class="mix-emoji-preview" id="mixEmojiPreview" aria-hidden="true">🎵</div>
-        <label class="mix-emoji-field">
-          <span class="mix-emoji-field-label">Paste or type your own emoji</span>
-          <input
-            class="mix-emoji-input"
-            id="mixEmojiInput"
-            type="text"
-            maxlength="16"
-            enterkeyhint="done"
-            autocomplete="off"
-            spellcheck="false"
-            aria-label="Your emoji"
-            placeholder="😀"
-          >
-        </label>
-        <button class="mix-emoji-apply" id="mixEmojiApply" type="button">Use emoji</button>
-        <p class="mix-emoji-hint">Emoji is recommended — it stays tiny under the 50-sound / 3MB limits</p>
-        <div class="mix-emoji-photo-row">
-          <button class="mix-emoji-photo-btn" id="mixEmojiPhotoBtn" type="button">Optional: tiny photo</button>
-          <input
-            class="mix-picker-file-input"
-            id="mixEmojiPhotoInput"
-            type="file"
-            accept="image/*"
-            hidden
-          >
-        </div>
-        <p class="mix-emoji-photo-note">Photos are auto-shrunk (~96px). Prefer emoji when you can.</p>
+      <p class="mix-emoji-photo-note">Photos are auto-shrunk (~96px). Prefer emoji when you can.</p>
+      <div class="mix-emoji-danger-row">
+        <button class="mix-emoji-reset-btn" id="mixEmojiResetBtn" type="button">Reset look</button>
+        <button class="mix-emoji-remove-btn" id="mixEmojiRemoveBtn" type="button">Remove sound</button>
       </div>
     </div>
-
-    <footer class="mix-picker-actions">
-      <button class="mix-picker-btn mix-picker-btn--ghost" id="mixPickerDefaults" type="button">
-        Clear Remote
-      </button>
-      <button class="mix-picker-btn mix-picker-btn--ghost" id="mixPickerSurprise" type="button">
-        Surprise Me
-      </button>
-      <button class="mix-picker-btn mix-picker-btn--primary" id="mixPickerSave" type="button">
-        Save Remote
-      </button>
-    </footer>
-  </aside>
+  </div>
 
   <script src="js/app.js"></script>
 </body>
+</html>

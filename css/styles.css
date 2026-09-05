@@ -1216,7 +1216,7 @@ body {
   background: linear-gradient(180deg, var(--btn-face) 0%, var(--btn-face-active) 100%);
   color: var(--btn-text);
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
   box-shadow:
     0 2px 0 var(--btn-highlight) inset,
     0 1px 0 rgba(255, 255, 255, 0.04) inset,
@@ -1326,6 +1326,8 @@ body.is-keypad-dragging .keypad {
   display: block;
   object-fit: contain;
   pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .sound-btn-emoji-img {
@@ -1392,8 +1394,54 @@ body.is-keypad-dragging .keypad {
     0 1px 4px var(--btn-shadow);
 }
 
-/* --- Home remote customize picker --- */
-.mix-picker-backdrop {
+/* --- Pack tray Add / Remove --- */
+.pack-chip--add,
+.pack-chip--remove {
+  border-style: dashed;
+  color: var(--btn-label);
+  letter-spacing: 0.04em;
+}
+
+.pack-chip--remove.is-active {
+  border-style: solid;
+  border-color: rgba(255, 110, 110, 0.55);
+  background: rgba(255, 80, 80, 0.14);
+  color: var(--btn-text);
+}
+
+@keyframes pack-wiggle {
+  0%,
+  100% {
+    transform: rotate(-0.7deg);
+  }
+  50% {
+    transform: rotate(0.7deg);
+  }
+}
+
+.pack-chip.is-wiggling {
+  animation: pack-wiggle 0.55s ease-in-out infinite;
+  position: relative;
+}
+
+.pack-chip.is-wiggling::after {
+  content: "×";
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #c44;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.pack-add-backdrop {
   position: fixed;
   inset: 0;
   z-index: calc(var(--z-panel) - 1);
@@ -1401,357 +1449,270 @@ body.is-keypad-dragging .keypad {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   opacity: 0;
-  visibility: hidden;
-  transition: opacity var(--transition-panel), visibility var(--transition-panel);
+  transition: opacity var(--transition-panel);
 }
 
-.mix-picker-backdrop.is-open {
+.pack-add-backdrop.is-open {
   opacity: 1;
-  visibility: visible;
 }
 
-.mix-picker-backdrop[hidden] {
-  display: block;
-}
-
-.mix-picker {
+.pack-add-popout {
   position: fixed;
   top: 50%;
   left: 50%;
   z-index: var(--z-panel);
-  width: min(440px, calc(100vw - 24px));
-  max-height: min(720px, calc(100dvh - 32px));
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(165deg, #252530 0%, #1a1a22 100%);
+  width: min(420px, calc(100vw - 32px));
+  padding: 0;
   border: 1px solid var(--device-border);
   border-radius: 16px;
-  box-shadow:
-    0 20px 56px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-  transform: translate(-50%, -48%) scale(0.96);
+  background: linear-gradient(165deg, #252530 0%, #1a1a22 100%);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.55);
+  transform: translate(-50%, -46%) scale(0.97);
   opacity: 0;
-  visibility: hidden;
   transition:
     opacity var(--transition-panel),
-    transform var(--transition-panel),
-    visibility var(--transition-panel);
-  pointer-events: none;
+    transform var(--transition-panel);
 }
 
-.mix-picker.is-open {
+.pack-add-popout.is-open {
   opacity: 1;
-  visibility: visible;
   transform: translate(-50%, -50%) scale(1);
-  pointer-events: auto;
 }
 
-.mix-picker[hidden] {
+.pack-add-popout-head {
   display: flex;
-}
-
-.mix-picker-header {
-  display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 16px 16px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.mix-picker-title {
-  font-size: 1rem;
+.pack-add-popout-title {
+  margin: 0;
+  font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
-.mix-picker-note {
-  margin-top: 4px;
-  font-size: 0.72rem;
-  line-height: 1.35;
-  color: var(--btn-label);
-}
-
-.mix-picker-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.pack-add-popout-close {
   width: 32px;
   height: 32px;
   border: none;
   border-radius: 8px;
   background: transparent;
   color: var(--btn-label);
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   line-height: 1;
   cursor: pointer;
-  flex-shrink: 0;
 }
 
-.mix-picker-close:hover {
-  background: rgba(255, 255, 255, 0.06);
+.pack-add-popout-close:hover {
   color: var(--btn-text);
-}
-
-.mix-picker-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 16px 0;
-}
-
-.mix-picker-count {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--lcd-text);
-}
-
-.mix-picker-clear {
-  border: none;
-  background: transparent;
-  color: var(--btn-label);
-  font-size: 0.72rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.mix-picker-clear:hover {
-  color: var(--btn-text);
-}
-
-.mix-picker-local-note {
-  margin: 6px 16px 0;
-  font-size: 0.62rem;
-  line-height: 1.35;
-  color: var(--btn-label);
-}
-
-.mix-picker-file-input {
-  display: none;
-}
-
-.mix-pick-delete {
-  width: 100%;
-  margin-top: 2px;
-  padding: 4px 6px;
-  border: 1px solid rgba(255, 80, 80, 0.28);
-  border-radius: 6px;
-  background: rgba(220, 60, 60, 0.16);
-  color: #ffb4b4;
-  font-family: var(--font-ui);
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.mix-pick-delete:hover {
-  background: rgba(220, 60, 60, 0.28);
-  color: #fff;
-}
-
-.mix-pick-badge {
-  display: none;
-}
-
-.mix-pick-cat {
-  width: 100%;
-  max-width: 100%;
-  margin-top: 2px;
-  padding: 3px 4px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.25);
-  color: var(--btn-label);
-  font-size: 0.58rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.mix-pick-cat:focus-visible {
-  outline: 1px solid var(--accent);
-}
-
-.mix-picker-cats {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 8px;
-  padding: 12px 16px 4px;
-  max-height: 210px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
-  -webkit-overflow-scrolling: touch;
-}
-
-.mix-picker-cats::-webkit-scrollbar {
-  width: 6px;
-}
-
-.mix-picker-cats::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.22);
-  border-radius: 99px;
-}
-
-.mix-picker-cat {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--btn-label);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    border-color var(--transition-fast),
-    color var(--transition-fast);
-}
-
-.mix-picker-cat:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: var(--btn-text);
 }
 
-.mix-picker-cat:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
-
-.mix-picker-cat.is-active {
-  border-color: rgba(91, 140, 255, 0.5);
-  background: rgba(91, 140, 255, 0.16);
-  color: var(--btn-text);
-}
-
-.mix-picker-cat-emoji {
-  font-size: 0.85rem;
-  line-height: 1;
-}
-
-.mix-picker-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  padding: 12px 16px;
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-}
-
-.mix-picker-empty {
-  grid-column: 1 / -1;
-  margin: 18px 0;
-  text-align: center;
-  color: var(--btn-label);
-  font-size: 0.78rem;
-  line-height: 1.4;
-}
-
-.mix-pick {
-  position: relative;
+.pack-add-popout-body {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 18px;
+}
+
+.pack-add-menu-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--btn-label);
+}
+
+.pack-add-popout-input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--btn-text);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  outline: none;
+}
+
+.pack-add-popout-input:focus {
+  border-color: rgba(91, 140, 255, 0.55);
+}
+
+.pack-add-popout-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.pack-add-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.pack-add-emoji-opt {
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  min-height: 92px;
-  padding: 10px 6px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  aspect-ratio: 1;
+  min-height: 40px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--btn-text);
-  cursor: pointer;
-  text-align: center;
-  transition:
-    background var(--transition-fast),
-    border-color var(--transition-fast),
-    transform var(--transition-fast),
-    opacity var(--transition-fast);
-}
-
-.mix-pick:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.mix-pick.is-selected {
-  border-color: rgba(91, 140, 255, 0.55);
-  background: rgba(91, 140, 255, 0.14);
-  box-shadow: 0 0 0 1px rgba(91, 140, 255, 0.2) inset;
-}
-
-.mix-pick-emoji {
-  font-size: 1.15rem;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 1.25rem;
   line-height: 1;
+  cursor: pointer;
 }
 
-.mix-pick-emoji-btn {
+.pack-add-emoji-opt:hover {
+  border-color: rgba(91, 140, 255, 0.4);
+  background: rgba(91, 140, 255, 0.12);
+}
+
+.pack-add-emoji-opt.is-selected {
+  border-color: rgba(91, 140, 255, 0.65);
+  background: rgba(91, 140, 255, 0.2);
+}
+
+.pack-add-popout-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.pack-add-emoji-pick {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 1.45rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pack-add-emoji-pick:hover {
+  border-color: rgba(91, 140, 255, 0.45);
+}
+
+.pack-add-menu-create {
+  flex: 1;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid rgba(91, 140, 255, 0.45);
+  border-radius: 12px;
+  background: rgba(91, 140, 255, 0.2);
+  color: var(--btn-text);
+  font-family: var(--font-ui);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pack-add-menu-create:hover {
+  background: rgba(91, 140, 255, 0.3);
+}
+
+@media (max-width: 480px) {
+  .pack-add-emoji-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+.sound-btn-look {
+  position: absolute;
+  top: 4px;
+  right: 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  margin: 0;
+  width: 22px;
+  height: 22px;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--btn-label);
+  font-size: 0.78rem;
+  line-height: 1;
   cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    border-color var(--transition-fast),
-    transform var(--transition-fast);
+  opacity: 0.85;
+  z-index: 2;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.mix-pick-emoji-btn:hover {
-  background: rgba(91, 140, 255, 0.18);
-  border-color: rgba(91, 140, 255, 0.45);
-  transform: translateY(-1px);
+.sound-btn-look:hover,
+.sound-btn:focus-within .sound-btn-look {
+  opacity: 1;
+  color: var(--btn-text);
+  background: rgba(0, 0, 0, 0.5);
 }
 
-.mix-pick-emoji-btn:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+.look-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-panel) - 1);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-panel), visibility var(--transition-panel);
+}
+
+.look-picker-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.look-picker-backdrop[hidden] {
+  display: block;
+  pointer-events: none;
+}
+
+.look-picker-backdrop.is-open[hidden] {
+  display: block;
 }
 
 .mix-emoji-picker {
-  flex-shrink: 0;
-  margin: 0 16px 8px;
-  padding: 10px 12px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.35);
-  max-height: 0;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: var(--z-panel);
+  width: min(340px, calc(100vw - 32px));
+  padding: 14px 14px 16px;
+  border: 1px solid var(--device-border);
+  border-radius: 14px;
+  background: linear-gradient(165deg, #252530 0%, #1a1a22 100%);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
+  transform: translate(-50%, -46%) scale(0.96);
   opacity: 0;
-  overflow: hidden;
+  visibility: hidden;
   pointer-events: none;
   transition:
-    max-height 220ms ease,
-    opacity 180ms ease,
-    margin 180ms ease,
-    padding 180ms ease;
+    opacity var(--transition-panel),
+    transform var(--transition-panel),
+    visibility var(--transition-panel);
 }
 
 .mix-emoji-picker.is-open {
-  max-height: 340px;
   opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
   pointer-events: auto;
 }
 
 .mix-emoji-picker[hidden] {
-  display: none;
+  display: block;
+  pointer-events: none;
 }
 
 .mix-emoji-picker-head {
@@ -1894,79 +1855,47 @@ body.is-keypad-dragging .keypad {
   border-color: rgba(91, 140, 255, 0.4);
 }
 
-.mix-pick-emoji-img {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-  display: block;
-}
-
-.mix-pick-label {
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mix-picker-actions {
+.mix-emoji-danger-row {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
-  padding: 12px 16px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 4px;
 }
 
-.mix-picker-btn {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 10px 12px;
+.mix-emoji-reset-btn,
+.mix-emoji-remove-btn {
+  flex: 1;
+  min-height: 36px;
+  padding: 0 10px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  font-size: 0.75rem;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
   cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
-.mix-picker-btn--ghost {
-  background: rgba(255, 255, 255, 0.04);
+.mix-emoji-reset-btn {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--btn-label);
+}
+
+.mix-emoji-reset-btn:hover {
   color: var(--btn-text);
+  border-color: rgba(91, 140, 255, 0.4);
+  background: rgba(91, 140, 255, 0.12);
 }
 
-.mix-picker-btn--ghost:hover {
-  background: rgba(255, 255, 255, 0.08);
+.mix-emoji-remove-btn {
+  border: 1px solid rgba(255, 110, 110, 0.35);
+  background: rgba(255, 80, 80, 0.1);
+  color: #ffb4b4;
 }
 
-.mix-picker-btn--primary {
-  background: linear-gradient(180deg, #6b9cff 0%, #4a7aef 100%);
-  border-color: transparent;
-  color: #fff;
+.mix-emoji-remove-btn:hover {
+  border-color: rgba(255, 110, 110, 0.55);
+  background: rgba(255, 80, 80, 0.18);
+  color: #ffd0d0;
 }
-
-.mix-picker-btn--primary:hover {
-  filter: brightness(1.06);
-}
-
-.mix-picker-btn--primary:disabled {
-  opacity: 0.45;
-  cursor: default;
-  filter: none;
-}
-
-@media (max-width: 480px) {
-  .mix-picker-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .utility-bar {
-    flex-wrap: wrap;
-  }
-}
-
 
 .utility-btn.is-muted .utility-icon {
   opacity: 0.45;

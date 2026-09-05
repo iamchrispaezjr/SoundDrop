@@ -113,11 +113,151 @@
     { id: "fantasy", label: "Fantasy", emoji: "🧙" },
     { id: "retro", label: "Retro", emoji: "🕹️" },
   ];
+  const CUSTOM_CATS_KEY = "noisegoblin-custom-categories";
+  const CUSTOM_CATS_MAX = 12;
+  const VISIBLE_PACKS_KEY = "noisegoblin-visible-packs";
+  const PINNED_PACKS = ["all", "mix", "trending"];
+  let packRemoveMode = false;
+
+  function loadVisiblePackIds() {
+    try {
+      const raw = localStorage.getItem(VISIBLE_PACKS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(function (id) {
+            return ORGANIZER_PACKS.some(function (p) {
+              return p.id === id;
+            });
+          });
+        }
+      }
+    } catch (err) {
+      /* ignore */
+    }
+    return ORGANIZER_PACKS.map(function (p) {
+      return p.id;
+    });
+  }
+
+  function saveVisiblePackIds(ids) {
+    try {
+      localStorage.setItem(VISIBLE_PACKS_KEY, JSON.stringify(ids || []));
+    } catch (err) {
+      /* ignore */
+    }
+  }
+
+  let visiblePackIds = loadVisiblePackIds();
+
+  function loadCustomCategories() {
+    try {
+      const raw = localStorage.getItem(CUSTOM_CATS_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .filter(function (cat) {
+          return cat && cat.id && cat.label;
+        })
+        .map(function (cat) {
+          return {
+            id: String(cat.id),
+            label: String(cat.label).slice(0, 18),
+            emoji: cat.emoji || "📁",
+          };
+        });
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function saveCustomCategories(list) {
+    try {
+      localStorage.setItem(CUSTOM_CATS_KEY, JSON.stringify(list || []));
+    } catch (err) {
+      /* ignore */
+    }
+  }
+
+  function getAllOrganizerPacks() {
+    return ORGANIZER_PACKS.concat(loadCustomCategories());
+  }
 
   function isOrganizerPack(packId) {
-    return ORGANIZER_PACKS.some(function (p) {
+    return getAllOrganizerPacks().some(function (p) {
       return p.id === packId;
     });
+  }
+
+  function slugifyCategoryLabel(label) {
+    const cleaned = String(label || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return "user-" + (cleaned || "category");
+  }
+
+  function ensureCustomCategory(label, emoji) {
+    const trimmed = String(label || "").trim().slice(0, 18);
+    if (!trimmed) return null;
+
+    const existing = getAllOrganizerPacks();
+    for (let i = 0; i < existing.length; i++) {
+      if (existing[i].label.toLowerCase() === trimmed.toLowerCase()) {
+        return existing[i];
+      }
+    }
+
+    const cats = loadCustomCategories();
+    if (cats.length >= CUSTOM_CATS_MAX) {
+      showToast("Max " + CUSTOM_CATS_MAX + " custom categories");
+      return null;
+    }
+
+    const used = {};
+    existing.forEach(function (p) {
+      used[p.id] = true;
+    });
+    let id = slugifyCategoryLabel(trimmed);
+    const base = id;
+    let n = 2;
+    while (used[id]) {
+      id = base + "-" + n;
+      n += 1;
+    }
+
+    const pickedEmoji = firstGrapheme(emoji) || "📁";
+    const cat = { id: id, label: trimmed, emoji: pickedEmoji };
+    cats.push(cat);
+    saveCustomCategories(cats);
+    syncUserCategoryChips();
+    return cat;
+  }
+
+  function isCustomCategoryId(packId) {
+    return loadCustomCategories().some(function (cat) {
+      return cat.id === packId;
+    });
+  }
+
+  function deleteCustomCategory(packId) {
+    if (!packId || !isCustomCategoryId(packId)) return false;
+    const next = loadCustomCategories().filter(function (cat) {
+      return cat.id !== packId;
+    });
+    saveCustomCategories(next);
+    customSoundsCache.forEach(function (sound) {
+      if (sound.category === packId) {
+        setCustomSoundCategory(sound.id, "");
+      }
+    });
+    syncUserCategoryChips();
+    if (activePack === packId) {
+      setAllPackActive();
+    }
+    return true;
   }
 
   function customsInCategory(packId) {
@@ -747,17 +887,8 @@
   const volumeSlider = document.getElementById("volumeSlider");
   const customizeBtn = document.getElementById("customizeBtn");
   const mineBtn = document.getElementById("mineBtn");
-  const mixPicker = document.getElementById("mixPicker");
-  const mixPickerBackdrop = document.getElementById("mixPickerBackdrop");
-  const mixPickerClose = document.getElementById("mixPickerClose");
-  const mixPickerGrid = document.getElementById("mixPickerGrid");
-  const mixPickerCount = document.getElementById("mixPickerCount");
-  const mixPickerClear = document.getElementById("mixPickerClear");
-  const mixPickerDefaults = document.getElementById("mixPickerDefaults");
-  const mixPickerSurprise = document.getElementById("mixPickerSurprise");
-  const mixPickerSave = document.getElementById("mixPickerSave");
-  const mixPickerCats = document.getElementById("mixPickerCats");
   const mixEmojiPicker = document.getElementById("mixEmojiPicker");
+  const lookPickerBackdrop = document.getElementById("lookPickerBackdrop");
   const mixEmojiPickerClose = document.getElementById("mixEmojiPickerClose");
   const mixEmojiPickerTitle = document.getElementById("mixEmojiPickerTitle");
   const mixEmojiPreview = document.getElementById("mixEmojiPreview");
@@ -765,12 +896,15 @@
   const mixEmojiApply = document.getElementById("mixEmojiApply");
   const mixEmojiPhotoBtn = document.getElementById("mixEmojiPhotoBtn");
   const mixEmojiPhotoInput = document.getElementById("mixEmojiPhotoInput");
+  const mixEmojiResetBtn = document.getElementById("mixEmojiResetBtn");
+  const mixEmojiRemoveBtn = document.getElementById("mixEmojiRemoveBtn");
   const mineFileInput = document.getElementById("mineFileInput");
   let emojiPickerSoundId = null;
   const packBookmark = document.getElementById("packBookmark");
   const packTab = document.getElementById("packTab");
   const packsHeaderBtn = document.getElementById("packsHeaderBtn");
   const packTray = document.getElementById("packTray");
+  const packList = document.getElementById("packList");
 
   // ---------------------------------------------------------------------------
   // Toast helper
@@ -1283,10 +1417,24 @@
     }
   }
 
+  function playableSound(sound) {
+    if (!sound) return null;
+    if (sound.custom || String(sound.id || "").indexOf("custom-") === 0) {
+      const live = findCustomSound(sound.id);
+      if (live && live.src) return live;
+    }
+    return sound.src ? sound : null;
+  }
+
   function playSound(sound) {
     stopCurrentSound();
+    const play = playableSound(sound);
+    if (!play || !play.src) {
+      console.warn("Audio playback failed: missing source");
+      return;
+    }
 
-    const audio = new Audio(sound.src);
+    const audio = new Audio(play.src);
     audio.volume = getVolume();
     currentAudio = audio;
 
@@ -1306,7 +1454,7 @@
       displayEmoji.innerHTML =
         '<img class="display-emoji-img" src="' +
         iconSrc.replace(/"/g, "") +
-        '" alt="">';
+        '" alt="" draggable="false">';
     } else {
       displayEmoji.textContent = emoji;
     }
@@ -1332,20 +1480,22 @@
 
   function onSoundClick(sound, btn) {
     flashButton(btn);
-    if (sound.uploadSlot || (sound.placeholder && !sound.src)) {
+    const play = playableSound(sound) || sound;
+    if (play.uploadSlot || (play.placeholder && !play.src)) {
       animateDisplay("⬆️", "Upload");
       if (mineFileInput) mineFileInput.click();
       return;
     }
-    if (sound.placeholder || !sound.src) {
-      showToast(sound.label + " — empty slot");
+    if (play.placeholder || !play.src) {
+      showToast((play.label || "Sound") + " — empty slot");
       return;
     }
-    animateDisplay(sound.emoji, sound.label, sound.icon);
-    playSound(sound);
+    animateDisplay(play.emoji, play.label, play.icon);
+    playSound(play);
 
-    const plays = recordPlay(sound.id);
-    sound.plays = plays;
+    const plays = recordPlay(play.id);
+    play.plays = plays;
+    if (sound) sound.plays = plays;
 
     if (activePack === "trending" && plays > TRENDING_MIN_PLAYS) {
       let countEl = btn.querySelector(".sound-btn-count");
@@ -1438,7 +1588,7 @@
       const iconHtml = sound.icon
         ? '<img class="sound-btn-emoji-img" src="' +
           sound.icon.replace(/"/g, "") +
-          '" alt="">'
+          '" alt="" draggable="false">'
         : sound.emoji;
 
       btn.innerHTML =
@@ -1450,10 +1600,29 @@
         "</span>" +
         (sound.showPlays && (sound.plays || 0) > TRENDING_MIN_PLAYS
           ? '<span class="sound-btn-count">' + (sound.plays || 0) + "</span>"
+          : "") +
+        (sound.custom
+          ? '<span class="sound-btn-look" role="button" tabindex="0" aria-label="Edit look for ' +
+            String(sound.label).replace(/"/g, "") +
+            '">✏️</span>'
           : "");
 
       let suppressClick = false;
-      btn.addEventListener("click", function () {
+      const lookBtn = btn.querySelector(".sound-btn-look");
+      if (lookBtn) {
+        function openLook(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const live = findCustomSound(sound.id) || sound;
+          openEmojiPicker(live);
+        }
+        lookBtn.addEventListener("click", openLook);
+        lookBtn.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") openLook(e);
+        });
+      }
+      btn.addEventListener("click", function (e) {
+        if (e.target.closest && e.target.closest(".sound-btn-look")) return;
         if (suppressClick) {
           suppressClick = false;
           return;
@@ -1609,6 +1778,7 @@
     btn.addEventListener("pointerdown", function (e) {
       if (e.pointerType === "mouse" && e.button !== 0) return;
       if (keypadDrag) return;
+      if (e.target.closest && e.target.closest(".sound-btn-look")) return;
 
       const rect = btn.getBoundingClientRect();
       keypadDrag = {
@@ -1946,51 +2116,447 @@
     });
   }
 
-  packTray.addEventListener("click", function (e) {
-    e.stopPropagation();
-  });
+  function selectPack(packId, options) {
+    const opts = options || {};
+    const next = packId || "all";
+    activePack = next;
 
-  packTray.querySelectorAll(".pack-chip:not([disabled])").forEach(function (chip) {
-    chip.addEventListener("click", function () {
-      packTray.querySelectorAll(".pack-chip").forEach(function (other) {
-        other.classList.toggle("is-active", other === chip);
+    packTray.querySelectorAll(".pack-chip").forEach(function (chip) {
+      chip.classList.toggle("is-active", chip.dataset.pack === next);
+    });
+
+    buildKeypad(activePack);
+    updateUtilityActionBtn();
+
+    if (!opts.announce) return;
+
+    const chip = packTray.querySelector('.pack-chip[data-pack="' + next + '"]');
+    const label = chip && chip.querySelector(".pack-chip-label");
+    const labelText = label ? label.textContent.trim() : next;
+    const emoji = (chip && chip.dataset.emoji) || "📑";
+    animateDisplay(emoji, labelText);
+
+    const playable = soundsForPack(activePack).filter(function (s) {
+      return s && s.src && !s.placeholder;
+    }).length;
+    if (activePack === "all") {
+      showToast("All — your remote (" + playable + " sounds)");
+    } else if (activePack === "mix") {
+      showToast("Mix — tap Randomize for a new set from your uploads");
+    } else if (activePack === "trending") {
+      showToast("Trending — counters unlock after 50 plays");
+    } else if (playable === 0) {
+      showToast(labelText + " is empty — upload while here to fill it");
+    } else {
+      showToast(labelText + " — " + playable + " sounds");
+    }
+  }
+
+  const CATEGORY_EMOJI_CHOICES = [
+    "📁",
+    "🎵",
+    "😂",
+    "🔥",
+    "🎮",
+    "🎬",
+    "🎤",
+    "🎧",
+    "💥",
+    "✨",
+    "🐸",
+    "👻",
+    "🚀",
+    "⚽",
+    "🍕",
+    "☕",
+    "💡",
+    "🎯",
+    "📣",
+    "🪄",
+    "📺",
+    "🔔",
+    "🐶",
+    "🎉",
+  ];
+
+  function closePackAddMenu() {
+    const menu = document.getElementById("packAddMenu");
+    const backdrop = document.getElementById("packAddBackdrop");
+    if (menu && menu.parentNode) menu.parentNode.removeChild(menu);
+    if (backdrop && backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+  }
+
+  function setPackRemoveMode(on) {
+    packRemoveMode = !!on;
+    if (packList) {
+      packList.classList.toggle("is-removing", packRemoveMode);
+    }
+    packTray.querySelectorAll(".pack-chip[data-removable='1']").forEach(function (chip) {
+      chip.classList.toggle("is-wiggling", packRemoveMode);
+    });
+    const removeBtn = document.getElementById("packRemoveBtn");
+    if (removeBtn) {
+      removeBtn.textContent = packRemoveMode ? "Done" : "Remove";
+      removeBtn.setAttribute("aria-pressed", packRemoveMode ? "true" : "false");
+      removeBtn.classList.toggle("is-active", packRemoveMode);
+    }
+    if (packRemoveMode) closePackAddMenu();
+  }
+
+  function createCategoryFromLabel(typed, emoji) {
+    const created = ensureCustomCategory(typed, emoji);
+    if (!created) return null;
+    closePackAddMenu();
+    syncPackTrayChips();
+    selectPack(created.id, { announce: true });
+    showToast('Added "' + created.label + '"');
+    return created;
+  }
+
+  function openPackAddMenu() {
+    closePackAddMenu();
+    setPackRemoveMode(false);
+
+    let selectedEmoji = "🎵";
+
+    const backdrop = document.createElement("div");
+    backdrop.id = "packAddBackdrop";
+    backdrop.className = "pack-add-backdrop";
+    backdrop.addEventListener("click", function () {
+      closePackAddMenu();
+    });
+
+    const menu = document.createElement("div");
+    menu.id = "packAddMenu";
+    menu.className = "pack-add-popout";
+    menu.setAttribute("role", "dialog");
+    menu.setAttribute("aria-modal", "true");
+    menu.setAttribute("aria-labelledby", "packAddTitle");
+    menu.addEventListener("click", function (e) {
+      e.stopPropagation();
+    });
+
+    const head = document.createElement("div");
+    head.className = "pack-add-popout-head";
+
+    const title = document.createElement("h2");
+    title.id = "packAddTitle";
+    title.className = "pack-add-popout-title";
+    title.textContent = "Add category";
+
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "pack-add-popout-close";
+    closeBtn.setAttribute("aria-label", "Close");
+    closeBtn.innerHTML = '<span aria-hidden="true">&times;</span>';
+    closeBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      closePackAddMenu();
+    });
+
+    head.appendChild(title);
+    head.appendChild(closeBtn);
+
+    const body = document.createElement("div");
+    body.className = "pack-add-popout-body";
+
+    const label = document.createElement("label");
+    label.className = "pack-add-menu-label";
+    label.setAttribute("for", "packAddInput");
+    label.textContent = "Category name";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.id = "packAddInput";
+    input.className = "pack-add-popout-input";
+    input.maxLength = 18;
+    input.placeholder = "e.g. Podcast, Clips, Intros…";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+
+    const iconLabel = document.createElement("p");
+    iconLabel.className = "pack-add-menu-label";
+    iconLabel.textContent = "Icon";
+
+    const emojiGrid = document.createElement("div");
+    emojiGrid.className = "pack-add-emoji-grid";
+    emojiGrid.setAttribute("role", "listbox");
+    emojiGrid.setAttribute("aria-label", "Category emoji");
+
+    const actions = document.createElement("div");
+    actions.className = "pack-add-popout-actions";
+
+    const emojiPickBtn = document.createElement("button");
+    emojiPickBtn.type = "button";
+    emojiPickBtn.className = "pack-add-emoji-pick";
+    emojiPickBtn.setAttribute("aria-label", "Selected category emoji");
+    emojiPickBtn.textContent = selectedEmoji;
+
+    const createBtn = document.createElement("button");
+    createBtn.type = "button";
+    createBtn.className = "pack-add-menu-create";
+    createBtn.textContent = "Create";
+
+    function syncEmojiSelection() {
+      emojiPickBtn.textContent = selectedEmoji;
+      emojiGrid.querySelectorAll(".pack-add-emoji-opt").forEach(function (btn) {
+        const on = btn.dataset.emoji === selectedEmoji;
+        btn.classList.toggle("is-selected", on);
+        btn.setAttribute("aria-selected", on ? "true" : "false");
       });
+    }
 
-      activePack = chip.dataset.pack || "all";
-      buildKeypad(activePack);
-      updateUtilityActionBtn();
+    CATEGORY_EMOJI_CHOICES.forEach(function (emoji) {
+      const opt = document.createElement("button");
+      opt.type = "button";
+      opt.className = "pack-add-emoji-opt";
+      opt.dataset.emoji = emoji;
+      opt.setAttribute("role", "option");
+      opt.setAttribute("aria-label", "Use " + emoji);
+      opt.textContent = emoji;
+      opt.addEventListener("click", function (e) {
+        e.stopPropagation();
+        selectedEmoji = emoji;
+        syncEmojiSelection();
+      });
+      emojiGrid.appendChild(opt);
+    });
 
-      const label = chip.querySelector(".pack-chip-label");
-      const labelText = label ? label.textContent.trim() : activePack;
-      const emoji = chip.dataset.emoji || "📑";
-      animateDisplay(emoji, labelText);
+    function submit() {
+      const typed = String(input.value || "").trim();
+      if (!typed) {
+        showToast("Type a category name first");
+        input.focus();
+        return;
+      }
+      createCategoryFromLabel(typed, selectedEmoji);
+    }
 
-      const playable = soundsForPack(activePack).filter(function (s) {
-        return s && s.src && !s.placeholder;
-      }).length;
-      if (activePack === "all") {
-        showToast("All — your remote (" + playable + " sounds)");
-      } else if (activePack === "mix") {
-        showToast("Mix — tap Randomize for a new set from your uploads");
-      } else if (activePack === "trending") {
-        showToast("Trending — counters unlock after 50 plays");
-      } else if (playable === 0) {
-        showToast(labelText + " is empty — upload while here to fill it");
-      } else {
-        showToast(labelText + " — " + playable + " sounds");
+    createBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      submit();
+    });
+    emojiPickBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      emojiGrid.scrollIntoView({ block: "nearest" });
+    });
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        submit();
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closePackAddMenu();
       }
     });
+
+    actions.appendChild(emojiPickBtn);
+    actions.appendChild(createBtn);
+
+    body.appendChild(label);
+    body.appendChild(input);
+    body.appendChild(iconLabel);
+    body.appendChild(emojiGrid);
+    body.appendChild(actions);
+
+    menu.appendChild(head);
+    menu.appendChild(body);
+
+    document.body.appendChild(backdrop);
+    document.body.appendChild(menu);
+    syncEmojiSelection();
+
+    requestAnimationFrame(function () {
+      backdrop.classList.add("is-open");
+      menu.classList.add("is-open");
+      input.focus();
+    });
+  }
+
+  function removePackChip(packId) {
+    if (!packId || PINNED_PACKS.indexOf(packId) !== -1) return;
+
+    if (isCustomCategoryId(packId)) {
+      const cat = loadCustomCategories().find(function (c) {
+        return c.id === packId;
+      });
+      const label = cat ? cat.label : packId;
+      const ok = window.confirm(
+        'Delete category "' + label + '"? Sounds in it become Unsorted.'
+      );
+      if (!ok) return;
+      deleteCustomCategory(packId);
+    } else {
+      visiblePackIds = visiblePackIds.filter(function (id) {
+        return id !== packId;
+      });
+      saveVisiblePackIds(visiblePackIds);
+      if (activePack === packId) {
+        selectPack("all");
+      }
+    }
+    syncPackTrayChips();
+    showToast("Category removed");
+  }
+
+  function makePackChip(opts) {
+    const btn = document.createElement("button");
+    btn.className =
+      "pack-chip" + (opts.packId === activePack ? " is-active" : "");
+    btn.type = "button";
+    btn.dataset.pack = opts.packId;
+    btn.dataset.emoji = opts.emoji || "📁";
+    if (opts.pinned) btn.dataset.pinned = "1";
+    if (opts.removable) btn.dataset.removable = "1";
+    if (opts.userCat) btn.dataset.userCat = "1";
+    if (packRemoveMode && opts.removable) btn.classList.add("is-wiggling");
+    btn.innerHTML =
+      '<span class="pack-chip-emoji" aria-hidden="true">' +
+      (opts.emoji || "📁") +
+      "</span>" +
+      '<span class="pack-chip-label">' +
+      opts.label +
+      "</span>";
+    return btn;
+  }
+
+  function syncPackTrayChips() {
+    if (!packList) return;
+    closePackAddMenu();
+
+    const pinned = {};
+    PINNED_PACKS.forEach(function (id) {
+      pinned[id] = true;
+    });
+
+    Array.prototype.slice.call(packList.children).forEach(function (el) {
+      if (el.id === "packAddMenu") return;
+      const pack = el.dataset && el.dataset.pack;
+      if (!pack || pinned[pack]) return;
+      el.remove();
+    });
+
+    const addBtnExisting = document.getElementById("packAddBtn");
+    const removeBtnExisting = document.getElementById("packRemoveBtn");
+    if (addBtnExisting) addBtnExisting.remove();
+    if (removeBtnExisting) removeBtnExisting.remove();
+
+    ORGANIZER_PACKS.forEach(function (pack) {
+      if (visiblePackIds.indexOf(pack.id) === -1) return;
+      packList.appendChild(
+        makePackChip({
+          packId: pack.id,
+          label: pack.label,
+          emoji: pack.emoji,
+          removable: true,
+        })
+      );
+    });
+
+    loadCustomCategories().forEach(function (cat) {
+      packList.appendChild(
+        makePackChip({
+          packId: cat.id,
+          label: cat.label,
+          emoji: cat.emoji || "📁",
+          removable: true,
+          userCat: true,
+        })
+      );
+    });
+
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.id = "packAddBtn";
+    addBtn.className = "pack-chip pack-chip--add";
+    addBtn.setAttribute("aria-label", "Add a category");
+    addBtn.setAttribute("aria-haspopup", "menu");
+    addBtn.textContent = "Add";
+    addBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const existing = document.getElementById("packAddMenu");
+      if (existing) {
+        closePackAddMenu();
+        return;
+      }
+      openPackAddMenu();
+    });
+    packList.appendChild(addBtn);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.id = "packRemoveBtn";
+    removeBtn.className =
+      "pack-chip pack-chip--remove" + (packRemoveMode ? " is-active" : "");
+    removeBtn.setAttribute("aria-label", "Remove a category");
+    removeBtn.setAttribute("aria-pressed", packRemoveMode ? "true" : "false");
+    removeBtn.textContent = packRemoveMode ? "Done" : "Remove";
+    removeBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      setPackRemoveMode(!packRemoveMode);
+      if (packRemoveMode) {
+        showToast("Tap a wiggling category to remove it");
+      }
+    });
+    packList.appendChild(removeBtn);
+
+    packList.querySelectorAll(".pack-chip[data-pack]").forEach(function (chip) {
+      chip.classList.toggle("is-active", chip.dataset.pack === activePack);
+    });
+  }
+
+  function syncUserCategoryChips() {
+    syncPackTrayChips();
+  }
+
+  packTray.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (e.target.closest("#packAddBtn") || e.target.closest("#packRemoveBtn")) {
+      return;
+    }
+    if (e.target.closest("#packAddMenu")) return;
+
+    const chip = e.target.closest(".pack-chip");
+    if (!chip || chip.disabled || !packTray.contains(chip)) return;
+    if (chip.id === "packAddBtn" || chip.id === "packRemoveBtn") return;
+
+    const packId = chip.dataset.pack;
+    if (!packId) return;
+
+    if (packRemoveMode && chip.dataset.removable === "1") {
+      removePackChip(packId);
+      return;
+    }
+
+    if (packRemoveMode) return;
+    selectPack(packId, { announce: true });
   });
 
+  syncPackTrayChips();
+
   document.addEventListener("click", function (e) {
+    if (document.getElementById("packAddMenu")) return;
     if (packBookmark.classList.contains("is-open") && !isPackControlTarget(e.target)) {
+      setPackRemoveMode(false);
       closePackTray();
     }
   });
 
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && packBookmark.classList.contains("is-open")) {
-      closePackTray();
+    if (e.key === "Escape") {
+      if (document.getElementById("packAddMenu")) {
+        closePackAddMenu();
+        return;
+      }
+      if (packRemoveMode) {
+        setPackRemoveMode(false);
+        return;
+      }
+      if (packBookmark.classList.contains("is-open")) {
+        closePackTray();
+      }
     }
   });
 
@@ -2061,365 +2627,12 @@
     applyBackground(DEFAULT_BACKGROUND, true);
   }
 
-  // ---------------------------------------------------------------------------
-  // Customize home remote picker
-  // ---------------------------------------------------------------------------
-  let pickerSelectedIds = [];
-  let pickerCategory = "all";
-
-  function getPackChipMeta() {
-    const meta = {};
-    packTray.querySelectorAll(".pack-chip[data-pack]").forEach(function (chip) {
-      const id = chip.dataset.pack;
-      if (!id || id === "all" || id === "mix" || id === "trending") return;
-      meta[id] = {
-        id: id,
-        label: (chip.querySelector(".pack-chip-label") || {}).textContent || id,
-        emoji: chip.dataset.emoji || "🎛️",
-      };
-    });
-    return meta;
-  }
-
-  function buildPickerPackIndex() {
-    const bySound = {};
-    const byPack = {};
-    const labelToPacks = {};
-    const packMeta = getPackChipMeta();
-
-    Object.keys(PACK_SOUNDS).forEach(function (packId) {
-      byPack[packId] = {};
-      (PACK_SOUNDS[packId] || []).forEach(function (sound) {
-        if (!sound) return;
-        const labelKey = String(sound.label || "")
-          .trim()
-          .toLowerCase();
-        if (labelKey) {
-          if (!labelToPacks[labelKey]) labelToPacks[labelKey] = [];
-          if (labelToPacks[labelKey].indexOf(packId) === -1) {
-            labelToPacks[labelKey].push(packId);
-          }
-        }
-        if (!sound.src) return;
-        byPack[packId][sound.id] = true;
-        if (!bySound[sound.id]) bySound[sound.id] = {};
-        bySound[sound.id][packId] = true;
-      });
-    });
-
-    allPlayablePool().forEach(function (sound) {
-      if (sound.custom) {
-        bySound[sound.id] = { mine: true };
-        if (!byPack.mine) byPack.mine = {};
-        byPack.mine[sound.id] = true;
-        return;
-      }
-      if (bySound[sound.id]) return;
-      const labelKey = String(sound.label || "")
-        .trim()
-        .toLowerCase();
-      const packs = labelToPacks[labelKey] || [];
-      if (!packs.length) {
-        bySound[sound.id] = { more: true };
-        if (!byPack.more) byPack.more = {};
-        byPack.more[sound.id] = true;
-        return;
-      }
-      bySound[sound.id] = {};
-      packs.forEach(function (packId) {
-        bySound[sound.id][packId] = true;
-        if (!byPack[packId]) byPack[packId] = {};
-        byPack[packId][sound.id] = true;
-      });
-    });
-
-    return { bySound: bySound, byPack: byPack, packMeta: packMeta };
-  }
-
-  function getPickerCategories(index) {
-    const cats = [
-      { id: "all", label: "Library", emoji: "🎛️" },
-      { id: "selected", label: "Selected", emoji: "✅" },
-      { id: "mine", label: "Unsorted", emoji: "📥" },
-    ];
-    ORGANIZER_PACKS.forEach(function (pack) {
-      cats.push({ id: pack.id, label: pack.label, emoji: pack.emoji });
-    });
-    return cats;
-  }
-
-  function filterPoolForPicker(pool, index) {
-    if (pickerCategory === "all") return pool;
-    if (pickerCategory === "selected") {
-      const byId = {};
-      pool.forEach(function (sound) {
-        byId[sound.id] = sound;
-      });
-      return pickerSelectedIds
-        .map(function (id) {
-          return byId[id];
-        })
-        .filter(Boolean);
-    }
-    if (pickerCategory === "mine") {
-      return pool.filter(function (sound) {
-        return !!sound.custom && !sound.category;
-      });
-    }
-    if (isOrganizerPack(pickerCategory)) {
-      return pool.filter(function (sound) {
-        return sound.category === pickerCategory;
-      });
-    }
-    return pool.filter(function (sound) {
-      const packs = index.bySound[sound.id];
-      return packs && packs[pickerCategory];
-    });
-  }
-
-  function buildPickerCats(index) {
-    const cats = getPickerCategories(index);
-    const valid = {};
-    cats.forEach(function (cat) {
-      valid[cat.id] = true;
-    });
-    if (!valid[pickerCategory]) pickerCategory = "all";
-
-    mixPickerCats.innerHTML = "";
-    cats.forEach(function (cat) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className =
-        "mix-picker-cat" + (cat.id === pickerCategory ? " is-active" : "");
-      btn.setAttribute("role", "tab");
-      btn.setAttribute("aria-selected", cat.id === pickerCategory ? "true" : "false");
-      btn.dataset.cat = cat.id;
-      btn.innerHTML =
-        '<span class="mix-picker-cat-emoji" aria-hidden="true">' +
-        cat.emoji +
-        "</span>" +
-        "<span>" +
-        cat.label +
-        "</span>";
-      btn.addEventListener("click", function () {
-        if (pickerCategory === cat.id) return;
-        pickerCategory = cat.id;
-        buildPickerCats(index);
-        buildPickerGrid(index);
-      });
-      mixPickerCats.appendChild(btn);
-    });
-  }
-
   function setAllPackActive() {
-    activePack = "all";
-    packTray.querySelectorAll(".pack-chip").forEach(function (chip) {
-      chip.classList.toggle("is-active", chip.dataset.pack === "all");
-    });
-    buildKeypad("all");
-    updateUtilityActionBtn();
+    selectPack("all");
   }
 
   function updateUtilityActionBtn() {
-    const icon = customizeBtn.querySelector(".utility-icon");
-    const label = customizeBtn.querySelector(".utility-label");
-    if (activePack === "mix") {
-      if (icon) icon.textContent = "🎲";
-      if (label) label.textContent = "Randomize";
-      customizeBtn.setAttribute("aria-label", "Randomize Mix sounds");
-      customizeBtn.setAttribute("aria-expanded", "false");
-      customizeBtn.removeAttribute("aria-controls");
-      if (mixPicker.classList.contains("is-open")) {
-        closeMixPicker();
-      }
-    } else {
-      if (icon) icon.textContent = "🎛️";
-      if (label) label.textContent = "Customize";
-      customizeBtn.setAttribute("aria-label", "Customize your remote");
-      customizeBtn.setAttribute("aria-controls", "mixPicker");
-    }
-  }
-
-  function updatePickerCount() {
-    mixPickerCount.textContent = pickerSelectedIds.length + " / " + PACK_SIZE;
-    mixPickerSave.disabled = pickerSelectedIds.length === 0;
-  }
-
-  function syncPickerSelectionUI() {
-    mixPickerGrid.querySelectorAll(".mix-pick").forEach(function (btn) {
-      const on = pickerSelectedIds.indexOf(btn.dataset.id) !== -1;
-      btn.classList.toggle("is-selected", on);
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-    updatePickerCount();
-  }
-
-  function confirmRemoveSound(sound) {
-    const ok = window.confirm("Remove \"" + sound.label + "\" from this device?");
-    if (!ok) return;
-    removeCustomSound(sound.id);
-  }
-
-  function buildPickerGrid(index) {
-    const packIndex = index || buildPickerPackIndex();
-    const pool = filterPoolForPicker(allPlayablePool(), packIndex);
-    mixPickerGrid.innerHTML = "";
-
-    if (!pool.length) {
-      const empty = document.createElement("p");
-      empty.className = "mix-picker-empty";
-      if (pickerCategory === "selected") {
-        empty.textContent = "No sounds selected yet";
-      } else if (pickerCategory === "mine") {
-        empty.textContent = "Upload audio files for this device only";
-      } else {
-        empty.textContent = "No sounds in this category yet";
-      }
-      mixPickerGrid.appendChild(empty);
-      syncPickerSelectionUI();
-      return;
-    }
-
-    pool.forEach(function (sound) {
-      const btn = document.createElement("div");
-      btn.className = "mix-pick";
-      btn.dataset.id = sound.id;
-      btn.setAttribute("role", "button");
-      btn.setAttribute("tabindex", "0");
-      btn.setAttribute("aria-pressed", "false");
-
-      const iconHtml = sound.icon
-        ? '<img class="mix-pick-emoji-img" src="' +
-          sound.icon.replace(/"/g, "") +
-          '" alt="">'
-        : sound.emoji;
-
-      if (sound.custom) {
-        const emojiBtn = document.createElement("span");
-        emojiBtn.className = "mix-pick-emoji-btn";
-        emojiBtn.setAttribute("role", "button");
-        emojiBtn.setAttribute("tabindex", "0");
-        emojiBtn.setAttribute("aria-label", "Change emoji for " + sound.label);
-        emojiBtn.innerHTML =
-          '<span class="mix-pick-emoji" aria-hidden="true">' +
-          iconHtml +
-          "</span>";
-        emojiBtn.addEventListener("click", function (e) {
-          e.stopPropagation();
-          openEmojiPicker(sound);
-        });
-        emojiBtn.addEventListener("keydown", function (e) {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            e.stopPropagation();
-            openEmojiPicker(sound);
-          }
-        });
-        btn.appendChild(emojiBtn);
-
-        const labelEl = document.createElement("span");
-        labelEl.className = "mix-pick-label";
-        labelEl.textContent = sound.label;
-        btn.appendChild(labelEl);
-
-        const catSelect = document.createElement("select");
-        catSelect.className = "mix-pick-cat";
-        catSelect.setAttribute("aria-label", "Category for " + sound.label);
-        const unset = document.createElement("option");
-        unset.value = "";
-        unset.textContent = "Unsorted";
-        catSelect.appendChild(unset);
-        ORGANIZER_PACKS.forEach(function (pack) {
-          const opt = document.createElement("option");
-          opt.value = pack.id;
-          opt.textContent = pack.label;
-          if (sound.category === pack.id) opt.selected = true;
-          catSelect.appendChild(opt);
-        });
-        if (!sound.category) unset.selected = true;
-        catSelect.addEventListener("click", function (e) {
-          e.stopPropagation();
-        });
-        catSelect.addEventListener("change", function (e) {
-          e.stopPropagation();
-          setCustomSoundCategory(sound.id, catSelect.value)
-            .then(function () {
-              showToast(
-                sound.label +
-                  " → " +
-                  (catSelect.value
-                    ? catSelect.options[catSelect.selectedIndex].text
-                    : "Unsorted")
-              );
-              refreshPickerAfterCustomChange();
-              if (isOrganizerPack(activePack) || activePack === "mine") {
-                buildKeypad(activePack);
-              }
-            })
-            .catch(function () {
-              showToast("Couldn't update category");
-            });
-        });
-        btn.appendChild(catSelect);
-
-        const del = document.createElement("button");
-        del.type = "button";
-        del.className = "mix-pick-delete";
-        del.setAttribute("aria-label", "Remove " + sound.label);
-        del.textContent = "Remove";
-        del.addEventListener("click", function (e) {
-          e.stopPropagation();
-          confirmRemoveSound(sound);
-        });
-        btn.appendChild(del);
-
-      } else {
-        btn.innerHTML =
-          '<span class="mix-pick-emoji" aria-hidden="true">' +
-          iconHtml +
-          "</span>" +
-          '<span class="mix-pick-label">' +
-          sound.label +
-          "</span>";
-      }
-
-      function toggleSelect() {
-        const idx = pickerSelectedIds.indexOf(sound.id);
-        if (idx !== -1) {
-          pickerSelectedIds.splice(idx, 1);
-        } else if (pickerSelectedIds.length >= PACK_SIZE) {
-          showToast("Max " + PACK_SIZE + " sounds");
-          return;
-        } else {
-          pickerSelectedIds.push(sound.id);
-        }
-        syncPickerSelectionUI();
-        if (pickerCategory === "selected") {
-          buildPickerGrid(packIndex);
-        }
-      }
-
-      btn.addEventListener("click", function (e) {
-        if (
-          e.target.closest(
-            ".mix-pick-delete, .mix-pick-cat, .mix-pick-emoji-btn"
-          )
-        ) {
-          return;
-        }
-        toggleSelect();
-      });
-      btn.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          toggleSelect();
-        }
-      });
-
-      mixPickerGrid.appendChild(btn);
-    });
-
-    syncPickerSelectionUI();
+    /* Randomize is always available */
   }
 
   function updateEmojiPreview(sound) {
@@ -2447,7 +2660,6 @@
       .then(function () {
         showToast(sound.label + " → " + picked);
         closeEmojiPicker();
-        refreshPickerAfterCustomChange();
         buildKeypad(activePack);
         animateDisplay(picked, sound.label);
       })
@@ -2458,14 +2670,19 @@
 
   function closeEmojiPicker() {
     emojiPickerSoundId = null;
-    if (!mixEmojiPicker) return;
-    mixEmojiPicker.hidden = true;
-    mixEmojiPicker.classList.remove("is-open");
+    if (mixEmojiPicker) {
+      mixEmojiPicker.hidden = true;
+      mixEmojiPicker.classList.remove("is-open");
+    }
+    if (lookPickerBackdrop) {
+      lookPickerBackdrop.hidden = true;
+      lookPickerBackdrop.classList.remove("is-open");
+    }
     if (mixEmojiInput) mixEmojiInput.value = "";
   }
 
   function openEmojiPicker(sound) {
-    if (!mixEmojiPicker || !sound) return;
+    if (!mixEmojiPicker || !sound || !sound.custom) return;
     emojiPickerSoundId = sound.id;
     if (mixEmojiPickerTitle) {
       mixEmojiPickerTitle.textContent = "Look for " + sound.label;
@@ -2473,6 +2690,10 @@
     updateEmojiPreview(sound);
     if (mixEmojiInput) {
       mixEmojiInput.value = sound.icon ? "" : sound.emoji || "";
+    }
+    if (lookPickerBackdrop) {
+      lookPickerBackdrop.hidden = false;
+      lookPickerBackdrop.classList.add("is-open");
     }
     mixEmojiPicker.hidden = false;
     requestAnimationFrame(function () {
@@ -2484,82 +2705,26 @@
     });
   }
 
-  function openMixPicker(startCategory) {
-    const current = customHomeSounds || [];
-    pickerSelectedIds = current.map(function (s) {
-      return s.id;
-    });
-    pickerCategory = startCategory || "all";
-    const index = buildPickerPackIndex();
-    buildPickerCats(index);
-    buildPickerGrid(index);
-    mixPicker.hidden = false;
-    mixPickerBackdrop.hidden = false;
-    requestAnimationFrame(function () {
-      mixPicker.classList.add("is-open");
-      mixPickerBackdrop.classList.add("is-open");
-    });
-    customizeBtn.setAttribute("aria-expanded", "true");
-  }
-
-  function closeMixPicker() {
-    closeEmojiPicker();
-    mixPicker.classList.remove("is-open");
-    mixPickerBackdrop.classList.remove("is-open");
-    customizeBtn.setAttribute("aria-expanded", "false");
-    mixPicker.addEventListener(
-      "transitionend",
-      function onEnd() {
-        mixPicker.hidden = true;
-        mixPickerBackdrop.hidden = true;
-        mixPicker.removeEventListener("transitionend", onEnd);
-      },
-      { once: true }
-    );
-  }
-
-  function soundsFromSelectedIds(ids) {
-    const pool = allPlayablePool();
-    const byId = {};
-    pool.forEach(function (s) {
-      byId[s.id] = s;
-    });
-    return ids
-      .map(function (id) {
-        return byId[id];
-      })
-      .filter(Boolean);
-  }
-
   customizeBtn.addEventListener("click", function (e) {
     e.stopPropagation();
-    if (activePack === "mix") {
-      if (!allPlayablePool().length) {
-        showToast("Upload sounds first");
-        return;
-      }
-      rerollSessionMix();
-      buildKeypad("mix");
-      animateDisplay("🎲", "Mix");
-      showToast("Mix reshuffled");
-      return;
+    if (activePack !== "mix") {
+      selectPack("mix");
     }
-    if (mixPicker.classList.contains("is-open")) {
-      closeMixPicker();
-    } else {
-      openMixPicker("all");
-    }
+    rerollSessionMix();
+    buildKeypad("mix");
+    showToast("New mix from your uploads");
+    animateDisplay("🎲", "Mix");
   });
 
   if (mineBtn) {
-    mineBtn.addEventListener("click", function (e) {
-      e.stopPropagation();
+    mineBtn.addEventListener("click", function () {
       if (mineFileInput) mineFileInput.click();
     });
   }
 
-  mixPickerClose.addEventListener("click", closeMixPicker);
-  mixPickerBackdrop.addEventListener("click", closeMixPicker);
+  if (lookPickerBackdrop) {
+    lookPickerBackdrop.addEventListener("click", closeEmojiPicker);
+  }
   if (mixEmojiPickerClose) {
     mixEmojiPickerClose.addEventListener("click", function (e) {
       e.stopPropagation();
@@ -2616,7 +2781,6 @@
         .then(function (dataUrl) {
           showToast(sound.label + " photo set");
           closeEmojiPicker();
-          refreshPickerAfterCustomChange();
           buildKeypad(activePack);
           animateDisplay(sound.emoji || "🎵", sound.label, dataUrl);
         })
@@ -2630,24 +2794,43 @@
     });
   }
 
-  mixPickerClear.addEventListener("click", function () {
-    pickerSelectedIds = [];
-    if (pickerCategory === "selected") {
-      buildPickerGrid();
-    } else {
-      syncPickerSelectionUI();
+  if (mixEmojiResetBtn) {
+    mixEmojiResetBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const sound = findCustomSound(emojiPickerSoundId);
+      if (!sound) return;
+      const nextEmoji = sound.emoji || randomCustomEmoji();
+      setCustomSoundEmoji(sound.id, nextEmoji)
+        .then(function () {
+          showToast(sound.label + " look reset");
+          closeEmojiPicker();
+          buildKeypad(activePack);
+          animateDisplay(nextEmoji, sound.label);
+        })
+        .catch(function () {
+          showToast("Couldn't reset look");
+        });
+    });
+  }
+
+  if (mixEmojiRemoveBtn) {
+    mixEmojiRemoveBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const sound = findCustomSound(emojiPickerSoundId);
+      if (!sound) return;
+      const ok = window.confirm(
+        'Remove "' + sound.label + '" from this device?'
+      );
+      if (!ok) return;
+      removeCustomSound(sound.id);
+    });
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && mixEmojiPicker && mixEmojiPicker.classList.contains("is-open")) {
+      closeEmojiPicker();
     }
   });
-
-  function refreshPickerAfterCustomChange() {
-    const index = buildPickerPackIndex();
-    buildPickerCats(index);
-    buildPickerGrid(index);
-    if (activePack === "all" && customHomeSounds) {
-      customHomeSounds = loadHomeMix();
-      buildKeypad("all");
-    }
-  }
 
   function removeCustomSound(id) {
     deleteCustomSoundRecord(id)
@@ -2657,13 +2840,9 @@
         customSoundsCache = customSoundsCache.filter(function (s) {
           return s.id !== id;
         });
-        pickerSelectedIds = pickerSelectedIds.filter(function (sid) {
-          return sid !== id;
-        });
         syncHomeFromLibrary();
         sessionMix = null;
         if (emojiPickerSoundId === id) closeEmojiPicker();
-        refreshPickerAfterCustomChange();
         buildKeypad(activePack);
         showToast("Removed sound");
       })
@@ -2699,9 +2878,6 @@
               (isOrganizerPack(activePack) ? " to " + activePack : "")
           );
           animateDisplay("⬆️", "Uploaded");
-          if (mixPicker.classList.contains("is-open")) {
-            refreshPickerAfterCustomChange();
-          }
         }
         return;
       }
@@ -2748,49 +2924,6 @@
       mineFileInput.value = "";
     });
   }
-
-  mixPickerDefaults.addEventListener("click", function () {
-    clearHomeMix();
-    setAllPackActive();
-    closeMixPicker();
-    showToast("Remote cleared — upload sounds to refill");
-    animateDisplay("⬆️", "Empty");
-  });
-
-  mixPickerSurprise.addEventListener("click", function () {
-    const pool = allPlayablePool();
-    if (!pool.length) {
-      showToast("Upload sounds first");
-      return;
-    }
-    const surprise = shuffleList(pool).slice(0, PACK_SIZE);
-    saveHomeMix(surprise);
-    setAllPackActive();
-    closeMixPicker();
-    showToast("Surprise remote ready");
-    animateDisplay("🎲", "Surprise");
-  });
-
-  mixPickerSave.addEventListener("click", function () {
-    if (!pickerSelectedIds.length) return;
-    const picked = soundsFromSelectedIds(pickerSelectedIds);
-    if (!picked.length) return;
-    saveHomeMix(picked);
-    setAllPackActive();
-    closeMixPicker();
-    showToast("Saved " + picked.length + " sounds to home remote");
-    animateDisplay("🎛️", "Custom");
-  });
-
-  mixPicker.addEventListener("click", function (e) {
-    e.stopPropagation();
-  });
-
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && mixPicker.classList.contains("is-open")) {
-      closeMixPicker();
-    }
-  });
 
   updateUtilityActionBtn();
 
