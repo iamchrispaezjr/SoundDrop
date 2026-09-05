@@ -903,10 +903,8 @@
 
   function dismissEditTips() {
     editTipsAreDismissed = true;
-    const editTip = document.getElementById("editTip");
     const brandEditChip = document.getElementById("brandEditChip");
     const displayEditCta = document.getElementById("displayEditCta");
-    if (editTip) editTip.hidden = true;
     if (brandEditChip) {
       brandEditChip.classList.remove("is-visible");
       brandEditChip.hidden = true;
@@ -2855,8 +2853,6 @@
   }
 
   function initEditTips() {
-    const editTip = document.getElementById("editTip");
-    const editTipClose = document.getElementById("editTipClose");
     const brandEditChip = document.getElementById("brandEditChip");
     try {
       editTipsAreDismissed = localStorage.getItem(EDIT_TIP_KEY) === "1";
@@ -2865,24 +2861,14 @@
     }
 
     if (editTipsAreDismissed) {
-      if (editTip) editTip.hidden = true;
       if (brandEditChip) brandEditChip.hidden = true;
       return;
     }
 
-    if (editTip) {
-      editTip.hidden = false;
-    }
     if (brandEditChip) {
       brandEditChip.hidden = false;
       requestAnimationFrame(function () {
         brandEditChip.classList.add("is-visible");
-      });
-    }
-    if (editTipClose) {
-      editTipClose.addEventListener("click", function (e) {
-        e.stopPropagation();
-        dismissEditTips();
       });
     }
   }
