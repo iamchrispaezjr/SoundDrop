@@ -608,13 +608,6 @@ body {
   margin-bottom: 4px;
 }
 
-.pack-tray-note {
-  font-size: 0.68rem;
-  line-height: 1.35;
-  color: var(--btn-label);
-  margin-bottom: 10px;
-}
-
 .pack-list {
   display: flex;
   flex-direction: column;
