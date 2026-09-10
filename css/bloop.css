@@ -163,6 +163,28 @@
   line-height: 1;
   cursor: pointer;
   box-shadow: 0 0 10px rgba(122, 215, 255, 0.2);
+  opacity: 0;
+  transition: opacity 0.22s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Desktop: X fades in only while the pointer is over BLOOP */
+@media (hover: hover) and (pointer: fine) {
+  .cpjr-bot:hover .cpjr-bot-hide,
+  .cpjr-bot-hide:focus-visible {
+    opacity: 1;
+  }
+}
+
+/* Mobile / touch: X only after chat is opened */
+@media (hover: none), (pointer: coarse) {
+  .cpjr-bot-hide {
+    pointer-events: none;
+  }
+
+  .cpjr-bot.is-open .cpjr-bot-hide {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .cpjr-bot-hide:hover {
@@ -173,6 +195,7 @@
 .cpjr-bot-hide:focus-visible {
   outline: 2px solid var(--bot-cyan);
   outline-offset: 2px;
+  opacity: 1;
 }
 
 .cpjr-bot-move-hint {
