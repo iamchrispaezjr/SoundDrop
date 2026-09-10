@@ -8,6 +8,12 @@
   var MOVED_KEY = "noisegoblin-bloop-moved-hint";
   var HIDDEN_KEY = "noisegoblin-bloop-hidden";
   var WELCOME_SESSION_KEY = "noisegoblin-welcome-dismissed";
+  var hiddenThisPage = false;
+
+  /* Older builds persisted hide forever — clear so refresh brings BLOOP back */
+  try {
+    localStorage.removeItem(HIDDEN_KEY);
+  } catch (err) {}
 
   var SOCIAL_LINKS = [
     {
@@ -482,19 +488,12 @@
   }
 
   function isHidden() {
-    try {
-      return localStorage.getItem(HIDDEN_KEY) === "1";
-    } catch (err) {
-      return false;
-    }
+    return hiddenThisPage;
   }
 
   function setHidden(on) {
-    try {
-      if (on) localStorage.setItem(HIDDEN_KEY, "1");
-      else localStorage.removeItem(HIDDEN_KEY);
-    } catch (err) {}
-    wrap.classList.toggle("is-hidden", !!on);
+    hiddenThisPage = !!on;
+    wrap.classList.toggle("is-hidden", hiddenThisPage);
     if (on) {
       setOpen(false);
       hideAnnounceBubble(false);
@@ -641,9 +640,7 @@
 
   applyBotPos(readBotPos());
   showMoveHintIfNeeded();
-  if (isHidden()) {
-    wrap.classList.add("is-hidden");
-  } else if (!wasWelcomeDismissed()) {
+  if (!wasWelcomeDismissed()) {
     window.setTimeout(showAnnounceBubble, 900);
   }
 
