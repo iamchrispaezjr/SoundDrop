@@ -223,7 +223,7 @@
   display: none;
 }
 
-@media (pointer: coarse) {
+@media (pointer: coarse), (max-width: 767px) {
   .cpjr-bot-move-hint {
     display: none !important;
   }

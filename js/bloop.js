@@ -312,8 +312,39 @@
     });
   }
 
+  function isMobileBotViewport() {
+    return window.matchMedia("(max-width: 767px)").matches;
+  }
+
   function botMoveEnabled() {
-    return true;
+    return !isMobileBotViewport();
+  }
+
+  function syncBotPlacement() {
+    if (!botMoveEnabled()) {
+      applyBotPos(null);
+      wrap.classList.remove("is-repositioned");
+      if (moveHint) moveHint.hidden = true;
+      if (hideBtn) {
+        hideBtn.title = "Hide BLOOP";
+      }
+      launcher.setAttribute(
+        "aria-label",
+        "Open BLOOP — Buddy Linking Our Online Projects"
+      );
+      return;
+    }
+    var pos = readBotPos();
+    applyBotPos(pos);
+    wrap.classList.toggle("is-repositioned", !!pos);
+    if (hideBtn) {
+      hideBtn.title = "Hide BLOOP — drag the orb to move it";
+    }
+    launcher.setAttribute(
+      "aria-label",
+      "Open BLOOP — Buddy Linking Our Online Projects. Drag to move."
+    );
+    showMoveHintIfNeeded();
   }
 
   function readBotPos() {
@@ -370,6 +401,10 @@
 
   function showMoveHintIfNeeded() {
     if (!moveHint) return;
+    if (!botMoveEnabled()) {
+      moveHint.hidden = true;
+      return;
+    }
     try {
       if (localStorage.getItem(MOVED_KEY) === "1" || readBotPos()) {
         moveHint.hidden = true;
@@ -587,6 +622,10 @@
     if (dragState && dragState.moved) {
       event.preventDefault();
       event.stopPropagation();
+      return;
+    }
+    if (!botMoveEnabled()) {
+      setOpen(!wrap.classList.contains("is-open"));
     }
   });
 
@@ -631,15 +670,13 @@
   window.addEventListener(
     "resize",
     function () {
-      var pos = readBotPos();
-      if (pos) applyBotPos(pos);
+      syncBotPlacement();
       if (wrap.classList.contains("is-open")) stabilizePanel();
     },
     { passive: true }
   );
 
-  applyBotPos(readBotPos());
-  showMoveHintIfNeeded();
+  syncBotPlacement();
   if (!wasWelcomeDismissed()) {
     window.setTimeout(showAnnounceBubble, 900);
   }
