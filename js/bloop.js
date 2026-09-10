@@ -7,6 +7,28 @@
   var POS_KEY = "noisegoblin-bloop-pos";
   var MOVED_KEY = "noisegoblin-bloop-moved-hint";
   var HIDDEN_KEY = "noisegoblin-bloop-hidden";
+  var WELCOME_SESSION_KEY = "noisegoblin-welcome-dismissed";
+
+  var SOCIAL_LINKS = [
+    {
+      href: "https://www.iamchrispaezjr.com",
+      label: "Home",
+      icon:
+        '<svg class="cpjr-bot-social-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+        '<path d="M4.5 11.2 12 4.8l7.5 6.4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<path d="M7 10.8V19h10v-8.2" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<path d="M10.2 19v-5.2h3.6V19" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>' +
+        "</svg>"
+    },
+    { href: "https://youtube.com/@iamchrispaezjr", label: "YouTube", img: "youtube.png" },
+    { href: "https://instagram.com/iamchrispaezjr", label: "Instagram", img: "instagram.png" },
+    { href: "https://www.threads.net/@iamchrispaezjr", label: "Threads", img: "threads.png" },
+    { href: "https://tiktok.com/@iamchrispaezjr", label: "TikTok", img: "tiktok.png" },
+    { href: "https://twitter.com/iamchrispjr", label: "X", img: "x.png" },
+    { href: "https://snapchat.com/add/iamchrispaezjr", label: "Snapchat", img: "snapchat.png" },
+    { href: "https://pinterest.com/iamchrispaezjroff", label: "Pinterest", img: "pinterest.png" },
+    { href: "https://twitch.tv/iamchrispaezjr", label: "Twitch", img: "twitch.png" }
+  ];
 
   var FAQ = [
     {
@@ -50,6 +72,19 @@
         'Built by <strong>Cristian Paez Jr</strong>. More of his house: <a href="https://www.iamchrispaezjr.com" target="_blank" rel="noopener noreferrer">iamchrispaezjr.com</a>.'
     },
     {
+      keys: ["social", "socials", "instagram", "youtube", "tiktok", "twitter", "threads", "snapchat", "follow", "links"],
+      answer:
+        'Find Cristian here: <a href="https://www.iamchrispaezjr.com" target="_blank" rel="noopener noreferrer">Home</a> · ' +
+        '<a href="https://youtube.com/@iamchrispaezjr" target="_blank" rel="noopener noreferrer">YouTube</a> · ' +
+        '<a href="https://instagram.com/iamchrispaezjr" target="_blank" rel="noopener noreferrer">Instagram</a> · ' +
+        '<a href="https://www.threads.net/@iamchrispaezjr" target="_blank" rel="noopener noreferrer">Threads</a> · ' +
+        '<a href="https://tiktok.com/@iamchrispaezjr" target="_blank" rel="noopener noreferrer">TikTok</a> · ' +
+        '<a href="https://twitter.com/iamchrispjr" target="_blank" rel="noopener noreferrer">X</a> · ' +
+        '<a href="https://snapchat.com/add/iamchrispaezjr" target="_blank" rel="noopener noreferrer">Snapchat</a> · ' +
+        '<a href="https://pinterest.com/iamchrispaezjroff" target="_blank" rel="noopener noreferrer">Pinterest</a> · ' +
+        '<a href="https://twitch.tv/iamchrispaezjr" target="_blank" rel="noopener noreferrer">Twitch</a>.'
+    },
+    {
       keys: ["bloop", "who are you", "what are you", "jarvis", "j\\.a\\.r\\.v\\.i\\.s"],
       answer:
         "I’m <strong>BLOOP</strong> — Buddy Linking Our Online Projects. Floating FAQ buddy for Noisegoblin (J.A.R.V.I.S. vibes, zero lawsuit energy)."
@@ -61,7 +96,7 @@
     {
       keys: ["help", "what can", "commands", "faq"],
       answer:
-        "Ask about uploads, limits, privacy, packs, the remote, looks/themes, donate, or who built this."
+        "Ask about uploads, limits, privacy, packs, the remote, looks/themes, socials, donate, or who built this."
     },
     {
       keys: ["hello", "hi", "hey", "yo", "sup"],
@@ -147,7 +182,7 @@
     "</svg>";
 
   var wrap = document.createElement("div");
-  wrap.className = "cpjr-bot";
+  wrap.className = "cpjr-bot cpjr-bot--links";
   wrap.innerHTML =
     '<div class="cpjr-bot-panel" id="cpjrBotPanel" hidden>' +
     '  <div class="cpjr-bot-panel-head">' +
@@ -166,17 +201,22 @@
     "  </form>" +
     "</div>" +
     '<div class="cpjr-bot-dock">' +
-    '<aside class="cpjr-bot-bubble" id="cpjrBotBubble" role="complementary" aria-label="BLOOP messages" hidden>' +
-    '  <button type="button" class="cpjr-bot-bubble-close" id="cpjrBotBubbleClose" aria-label="Dismiss messages">×</button>' +
+    '<aside class="cpjr-bot-bubble" id="cpjrBotBubble" role="complementary" aria-label="BLOOP welcome" hidden>' +
+    '  <button type="button" class="cpjr-bot-bubble-close" id="cpjrBotBubbleClose" aria-label="Dismiss welcome">×</button>' +
     '  <div class="cpjr-bot-holo-msg" id="cpjrBotHoloGreet" data-holo-msg>' +
-    "    Hey — welcome to Noisegoblin. I’m BLOOP: Buddy Linking Our Online Projects." +
+    "    Hey — welcome to <strong>Noisegoblin</strong>. I’m BLOOP: Buddy Linking Our Online Projects." +
     "  </div>" +
     '  <div class="cpjr-bot-holo-msg cpjr-bot-holo-msg--project" id="cpjrBotHoloProject" data-holo-msg>' +
-    '    <span class="cpjr-bot-holo-label">Quick tip</span>' +
-    '    <span class="cpjr-bot-holo-title" id="cpjrBotBubbleTitle">Upload your own SFX</span>' +
-    '    <p class="cpjr-bot-holo-body" id="cpjrBotBubbleDesc">Up to 50 sounds, 3MB each — private to this device. Tap the orb if you need help.</p>' +
+    '    <span class="cpjr-bot-holo-label">Welcome</span>' +
+    '    <span class="cpjr-bot-holo-title" id="cpjrBotBubbleTitle">Your private soundboard</span>' +
+    '    <p class="cpjr-bot-holo-body" id="cpjrBotBubbleDesc">' +
+    "      Upload your own SFX (up to 50, 3MB each), set emojis or photos, sort packs, and play on a 17-button remote that stays on this device. Tap the board title or a sound’s green name to rename. Use ✏️ on a button to change its look. No login needed." +
+    "      If you like it, consider " +
+    '      <a href="https://www.paypal.com/donate/?hosted_button_id=XRLVQFNNNTMAG" target="_blank" rel="noopener noreferrer">donating</a>.' +
+    "    </p>" +
     '    <div class="cpjr-bot-holo-actions" id="cpjrBotBubbleActions" hidden></div>' +
-    '    <a class="cpjr-bot-holo-cta" id="cpjrBotBubbleCta" href="#">Got it →</a>' +
+    '    <nav class="cpjr-bot-socials" id="cpjrBotSocials" aria-label="Social media"></nav>' +
+    '    <a class="cpjr-bot-holo-cta" id="cpjrBotBubbleCta" href="#">Ask BLOOP →</a>' +
     "  </div>" +
     "</aside>" +
     '<button type="button" class="cpjr-bot-hide" id="cpjrBotHide" aria-label="Hide BLOOP" title="Hide BLOOP — drag the orb to move it">' +
@@ -204,9 +244,67 @@
   var bubble = document.getElementById("cpjrBotBubble");
   var bubbleClose = document.getElementById("cpjrBotBubbleClose");
   var bubbleCta = document.getElementById("cpjrBotBubbleCta");
+  var socials = document.getElementById("cpjrBotSocials");
   var suggestions = document.getElementById("cpjrBotSuggestions");
   var greeted = false;
   var panelStabilizeTimer = 0;
+  var holoRevealTimers = [];
+
+  function socialLinksHtml() {
+    return SOCIAL_LINKS.map(function (item) {
+      var inner = item.img
+        ? '<img src="' + item.img + '" alt="" width="16" height="16">'
+        : item.icon;
+      return (
+        '<a class="cpjr-bot-social" href="' +
+        item.href +
+        '" target="_blank" rel="noopener noreferrer" aria-label="' +
+        item.label +
+        '" title="' +
+        item.label +
+        '">' +
+        inner +
+        "</a>"
+      );
+    }).join("");
+  }
+
+  if (socials) {
+    socials.innerHTML = socialLinksHtml();
+  }
+
+  function wasWelcomeDismissed() {
+    try {
+      return sessionStorage.getItem(WELCOME_SESSION_KEY) === "1";
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function markWelcomeDismissed() {
+    try {
+      sessionStorage.setItem(WELCOME_SESSION_KEY, "1");
+    } catch (err) {}
+  }
+
+  function clearHoloRevealTimers() {
+    holoRevealTimers.forEach(function (id) {
+      window.clearTimeout(id);
+    });
+    holoRevealTimers = [];
+  }
+
+  function revealHoloMessages() {
+    clearHoloRevealTimers();
+    var msgs = bubble.querySelectorAll("[data-holo-msg]");
+    msgs.forEach(function (msg, index) {
+      msg.classList.remove("is-in");
+      var timer = window.setTimeout(function () {
+        msg.classList.add("is-in");
+      }, 90 + index * 180);
+      holoRevealTimers.push(timer);
+    });
+  }
 
   function botMoveEnabled() {
     return true;
@@ -366,14 +464,21 @@
   }
 
   function showAnnounceBubble() {
+    if (wasWelcomeDismissed() || isHidden()) return;
     bubble.hidden = false;
     bubble.classList.add("is-on");
+    revealHoloMessages();
   }
 
   function hideAnnounceBubble(openChat) {
+    clearHoloRevealTimers();
+    markWelcomeDismissed();
     bubble.classList.remove("is-on");
+    bubble.querySelectorAll("[data-holo-msg]").forEach(function (msg) {
+      msg.classList.remove("is-in");
+    });
     bubble.hidden = true;
-    if (openChat) setOpen(true);
+    if (openChat && !wrap.classList.contains("is-open")) setOpen(true);
   }
 
   function isHidden() {
@@ -401,6 +506,7 @@
     "How do uploads work?",
     "Is it private?",
     "Packs?",
+    "Socials?",
     "Donate?",
     "Who built this?"
   ];
@@ -537,8 +643,8 @@
   showMoveHintIfNeeded();
   if (isHidden()) {
     wrap.classList.add("is-hidden");
-  } else {
-    window.setTimeout(showAnnounceBubble, 1800);
+  } else if (!wasWelcomeDismissed()) {
+    window.setTimeout(showAnnounceBubble, 900);
   }
 
   /* Long-press / double-tap launcher area when hidden isn’t needed —

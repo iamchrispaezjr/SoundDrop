@@ -833,6 +833,56 @@ html.site-night .cpjr-bot-hud {
   display: none !important;
 }
 
+.cpjr-bot-socials {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.55rem 0 0.2rem;
+}
+
+.cpjr-bot-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(122, 215, 255, 0.28);
+  color: #0a1a28;
+  text-decoration: none;
+  transition:
+    transform 0.18s var(--bot-ease),
+    background 0.18s var(--bot-ease);
+}
+
+.cpjr-bot-social:hover {
+  transform: translateY(-1px);
+  background: #fff;
+}
+
+.cpjr-bot-social img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.cpjr-bot-social-svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+.cpjr-bot-holo-body a {
+  color: var(--bot-cyan);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .cpjr-bot-holo-actions {
   position: relative;
   z-index: 1;
